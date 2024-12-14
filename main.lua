@@ -12,7 +12,7 @@
     KEYBOARD INPUT -
     ✳️mC_nBKS:  how fast you like when tweaking ParamSliders by pressing Boost-Key
 
-	left, right: cycling shaders.
+    left, right: cycling shaders.
     up, down: cycling menu pages. < Param(VertexData), Texture, Filename >
     1,2,3,4: go mode
     5,6,7,8: tweak ParamSlider1, 5 and 8 boost steps speed by "mC_nBKS" ... and so on
@@ -110,11 +110,11 @@ local M,m,mm,mtFn,mLstnr = {},{},{},{},{}
 -- Public
 ----------------------------------------------------------------------------------------------------
 
-M.startup = function()	-- Calls only once
+M.startup = function()  -- Calls only once
     
 
     local _aList
-	_aList = file_get_match_sub( mC_pthG, '^%a.*', '.lua' )
+    _aList = file_get_match_sub( mC_pthG, '^%a.*', '.lua' )
     shdilr.load_list( mC_pthG:gsub('%/','%.'), _aList, 1 )
     _aList = file_get_match_sub( mC_pthF, '^%a.*', '.lua' )
     shdilr.load_list( mC_pthF:gsub('%/','%.'), _aList, 2 )
