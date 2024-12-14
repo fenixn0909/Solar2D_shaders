@@ -9,8 +9,13 @@ NOTE: Almost of the shaders are working on simulator but havn't test on devices 
 
 You might want to check the license of thier original creators if you gonna to use them in your projects. the information included in each shader.lua file.
 
+Screenshots:
 
+![alt text](https://github.com/fenixn0909/Solar2D_ShaderBank/blob/main/_img/screenCap1.jpg?raw=true)
 
+![alt text](https://github.com/fenixn0909/Solar2D_ShaderBank/blob/main/_img/screenCap2.jpg?raw=true)
+
+![alt text](https://github.com/fenixn0909/Solar2D_ShaderBank/blob/main/_img/screenCap3.jpg?raw=true)
 
 
 
