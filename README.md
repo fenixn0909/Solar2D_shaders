@@ -1,4 +1,23 @@
-# Solar2D_shaders
-Collection of shaders ready for Solar2D
+# Solar2D_ShaderBank
 
-You might want to check the license of thier original creators if you wanted to use them in your published projects. the information included in each lua file.
+Shader viewer + Collections of Solar2D-ready shaders  
+
+
+You might want to check the license of thier original creators if you gonna to use them in your projects. the information included in each shader.lua file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
