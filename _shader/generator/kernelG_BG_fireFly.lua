@@ -29,6 +29,7 @@ kernel.vertexData =
 kernel.fragment =
 [[
 P_UV vec2 iResolution = vec2(1. ,1.);
+
 //----------------------------------------------
   //#define resolution iResolution
   //#define frame iFrame
@@ -63,11 +64,6 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
   P_COLOR vec4 COLOR;
   P_DEFAULT float iTime = CoronaTotalTime;
 
-  //scale = sin(CoronaTotalTime*3) * 1000;
-  //amount = abs(sin(CoronaTotalTime*1)) * 3 + 1.5; // For Dot
-  //amount = abs(sin(CoronaTotalTime*1)) *2  + 1; // For Line
-  //saturation = abs(sin(CoronaTotalTime)) * 1 + .7;
-  
   //----------------------------------------------
   
     vec2 uv = (fragCoord.xy-iResolution.xy*.5)/iResolution.y;

@@ -18,49 +18,43 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "resolutionX",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 0, 
-  },
-  {
-    name = "resolutionY",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 1, 
-  },
-}
+  { name = "Speed",       default = .25, min = -20, max = 20, index = 0, },
+  { name = "Brightness",  default = 0.85, min = 0.3, max = 1.5, index = 1, },
+  { name = "Cover",       default = 0.1, min = -10, max = 10, index = 2, },
+  { name = "Zoom",       default =  1.1, min = 0, max = 50, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
-P_DEFAULT float resolutionX = CoronaVertexUserData.x;
-P_DEFAULT float resolutionY = CoronaVertexUserData.y;
-P_UV vec2 iResolution = vec2(resolutionX,resolutionY);
+float Speed = CoronaVertexUserData.x;
+float Brightness = CoronaVertexUserData.y;
+float Cover = CoronaVertexUserData.z;
+float Zoom = CoronaVertexUserData.w;
+
+
+
+P_UV vec2 iResolution = vec2(1,1);
 //----------------------------------------------
 
-const float cloudscale = 1.1;
-const float speed = 0.03;
-const float clouddark = 0.5;
-const float cloudlight = 0.3;
-const float cloudcover = 0.2;
+//const float Zoom = 1.1;
+//const float Speed = 0.03;
+const float Darkness = .5;
+//const float Brightness = .3;
+//const float Cover = .2;
 const float cloudalpha = 8.0;
-const float skytint = 0.5;
+const float skytint = .5;
 
-const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
-const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
+P_COLOR const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
+P_COLOR const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
 
 // No Sky Color
 //const vec3 skycolour1 = vec3(0.0, 0.0, 0.0);
 //const vec3 skycolour2 = vec3(0.0, 0.0, 0.0);
 
-
-
 const mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );
 
+//----------------------------------------------
 vec2 hash( vec2 p ) {
   p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)));
   return -1.0 + 2.0*fract(sin(p)*43758.5453123);
@@ -89,97 +83,108 @@ float fbm(vec2 n) {
   return total;
 }
 
-
 float when_gt(float x, float y) { //greater than return 1
   return max(sign(x - y), 0.0);
 }
 
 // -----------------------------------------------
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 COLOR;
+P_DEFAULT float TIME = CoronaTotalTime;
+
+
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_UV vec2 fragCoord = texCoord / iResolution;
-  P_COLOR vec4 COLOR;
-  P_DEFAULT float iTime = CoronaTotalTime;
-  //P_DEFAULT float alpha = abs(sin(CoronaTotalTime)) -0.15;
-  //----------------------------------------------
+    P_UV vec2 fragCoord = UV / iResolution;
+
+    //P_DEFAULT float alpha = abs(sin(CoronaTotalTime)) -0.15;
+    //----------------------------------------------
   
     vec2 p = fragCoord.xy / iResolution.xy;
-      vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0);    
-        float time = iTime * speed;
-        float q = fbm(uv * cloudscale * 0.5);
-        
-        //ridged noise shape
-      float r = 0.0;
-      uv *= cloudscale;
-        uv -= q - time;
-        float weight = 0.8;
-        for (int i=0; i<8; i++){
-        r += abs(weight*noise( uv ));
-            uv = m*uv + time;
-        weight *= 0.7;
-        }
-        
-        //noise shape
-      float f = 0.0;
-        uv = p*vec2(iResolution.x/iResolution.y,1.0);
-      uv *= cloudscale;
-        uv -= q - time;
-        weight = 0.7;
-        for (int i=0; i<8; i++){
-        f += weight*noise( uv );
-            uv = m*uv + time;
-        weight *= 0.6;
-        }
-        
-        f *= r + f;
-        
-        //noise colour
-        float c = 0.0;
-        time = iTime * speed * 2.0;
-        uv = p*vec2(iResolution.x/iResolution.y,1.0);
-      uv *= cloudscale*2.0;
-        uv -= q - time;
-        weight = 0.4;
-        for (int i=0; i<7; i++){
-        c += weight*noise( uv );
-            uv = m*uv + time;
-        weight *= 0.6;
-        }
-        
-        //noise ridge colour
-        float c1 = 0.0;
-        time = iTime * speed * 3.0;
-        uv = p*vec2(iResolution.x/iResolution.y,1.0);
-      uv *= cloudscale*3.0;
-        uv -= q - time;
-        weight = 0.4;
-        for (int i=0; i<7; i++){
-        c1 += abs(weight*noise( uv ));
-            uv = m*uv + time;
-        weight *= 0.6;
-        }
-      
-        c += c1;
-        
-        vec3 skycolour = mix(skycolour2, skycolour1, p.y);
-        vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
-        
-        // No Sky Color
-        //vec3 skycolour = vec3(0,0,0);
-        //vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((clouddark + cloudlight*c), 0.0, 1.0);
-        
-        
-        f = cloudcover + cloudalpha*f*r;
-        
-        vec3 result = mix(skycolour, clamp(skytint * skycolour + cloudcolour, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
+    vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0);    
+    
+    // Tweaking Shape
+    TIME = CoronaTotalTime + 100;
+
+    uv.x = uv.x*TIME* 100;
+    //uv.y = uv.y*TIME* 1.5;
+
+
+    float time = TIME * Speed;
+    float q = fbm(uv * Zoom * 0.5);
+
+    //ridged noise shape
+    float r = 0.0;
+    uv *= Zoom;
+    uv -= q - time;
+    float weight = 0.8;
+    for (int i=0; i<8; i++){
+    r += abs(weight*noise( uv ));
+        uv = m*uv + time;
+    weight *= 0.7;
+    }
+
+    //noise shape
+    float f = 0.0;
+    uv = p*vec2(iResolution.x/iResolution.y,1.0);
+    uv *= Zoom;
+    uv -= q - time;
+    weight = 0.7;
+    for (int i=0; i<8; i++){
+    f += weight*noise( uv );
+        uv = m*uv + time;
+    weight *= 0.6;
+    }
+
+    f *= r + f;
+
+    //noise colour
+    float c = 0.0;
+    time = TIME * Speed * 2.0;
+    uv = p*vec2(iResolution.x/iResolution.y,1.0);
+    uv *= Zoom*2.0;
+    uv -= q - time;
+    weight = 0.4;
+    for (int i=0; i<7; i++){
+    c += weight*noise( uv );
+        uv = m*uv + time;
+    weight *= 0.6;
+    }
+
+    //noise ridge colour
+    float c1 = 0.0;
+    time = TIME * Speed * 3.0;
+    uv = p*vec2(iResolution.x/iResolution.y,1.0);
+    uv *= Zoom*3.0;
+    uv -= q - time;
+    weight = 0.4;
+    for (int i=0; i<7; i++){
+    c1 += abs(weight*noise( uv ));
+        uv = m*uv + time;
+    weight *= 0.6;
+    }
+
+    c += c1;
+
+    vec3 skycolour = mix(skycolour2, skycolour1, p.y);
+    vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((Darkness + Brightness*c), 0.0, 1.0);
+
+    // No Sky Color
+    //vec3 skycolour = vec3(0,0,0);
+    //vec3 cloudcolour = vec3(1.1, 1.1, 0.9) * clamp((Darkness + Brightness*c), 0.0, 1.0);
+
+
+    f = Cover + cloudalpha*f*r;
+
+    vec3 result = mix(skycolour, clamp(skytint * skycolour + cloudcolour, 0.0, 1.0), clamp(f + c, 0.0, 1.0));
         
 
   //----------------------------------------------
   
-  // Rid Darker Color
+  // Rid Off Darker Color
   float alpha = when_gt( result.r, 0.5) *0.75;
   COLOR = vec4( result, alpha );
+  COLOR.rgb *= COLOR.a;
 
   // No Transparent
   //COLOR = vec4( result, 1 );

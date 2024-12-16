@@ -19,35 +19,32 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "Speed",      default = 1.0, min = 0, max = 10, index = 0, },
+  { name = "Glow",       default = 0.08, min = 0, max = 2, index = 1, },
+  { name = "AmpX",       default = 2.0, min = 0, max = 50, index = 2, },
+  { name = "AmpY",       default = 1.0, min = 0, max = 50, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
+float Speed = CoronaVertexUserData.x;
+float Glow = CoronaVertexUserData.y;
+float AmpX = CoronaVertexUserData.z;
+float AmpY = CoronaVertexUserData.w;
+
+
 //----------------------------------------------
 
 uniform int lightning_number = 5;
-uniform vec2 amplitude = vec2(2.0,1.0);
-uniform float offset = 0.45;
-uniform float thickness = 0.02;
-uniform float speed = 3.0;
+vec2 Amplitude = vec2( AmpX, AmpY );
+uniform float offset = 0.5;
+uniform float thickness = .02;
+//uniform float Glow = 0.08;
+//uniform float Speed = 1.0;
+
 uniform vec4 base_color = vec4(1.0, 1.0, 1.0, 1.0); // : source_color
-uniform float glow_thickness = 0.08;
 uniform vec4 glow_color = vec4(0.2, 0, 0.8, 0.0); // : source_color
 uniform float alpha = 1.0; // : hint_range(0, 1)
 
@@ -111,10 +108,10 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
   float buffer; 
   // add more lightning
   for ( int i = 0; i < lightning_number; i++){
-    t = uv * amplitude + vec2(float(i), -float(i)) - TIME*speed;
+    t = uv * Amplitude + vec2(float(i), -float(i)) - TIME*Speed;
     y = fbm(t)*offset;
     pct = plot(uv, y, thickness);
-    buffer = plot(uv, y, glow_thickness);
+    buffer = plot(uv, y, Glow);
     color += pct*base_color;
     color += buffer*glow_color;
   }

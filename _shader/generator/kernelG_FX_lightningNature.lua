@@ -17,18 +17,32 @@ kernel.isTimeDependent = true
 kernel.vertexData =
 {
   {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
+    name = "amp_start",
+    default = 0.5,
+    min = -1,
+    max = 1,
+    index = 0,    
   },
   {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
+    name = "amp_coeff",
+    default = 0.5,
+    min = -.75,
+    max = .75,     
+    index = 1,    
+  },
+  {
+    name = "freq_coeff",
+    default = 2.0,
+    min = 0,
+    max = 30,     
+    index = 2,    
+  },
+  {
+    name = "speed",
+    default = .5,
+    min = 0,
+    max = 50,     
+    index = 3,    
   },
 }
 
@@ -38,12 +52,15 @@ kernel.fragment =
 
 //----------------------------------------------
 
-uniform vec3 effect_color = vec3(0.2, 0.3, 0.8); //: source_color 
-uniform int octave_count = 10; //: hint_range(1, 20)
-uniform float amp_start = 0.5;
-uniform float amp_coeff = 0.5;
-uniform float freq_coeff = 2.0;
-uniform float speed = .5;
+
+float amp_start = CoronaVertexUserData.x;
+float amp_coeff = CoronaVertexUserData.y;
+float freq_coeff = CoronaVertexUserData.z;
+float speed = CoronaVertexUserData.w;
+
+int octave_count = 10; //: hint_range(1, 20)
+vec3 effect_color = vec3(0.2, 0.3, 0.8); //: source_color 
+
 
 //----------------------------------------------
 
@@ -93,9 +110,13 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     float dist = abs(uv.x);
     vec3 color = effect_color * mix(0.0, 0.05, hash12(vec2(TIME))) / dist;
     COLOR = vec4(color, 1.0);
-    
+
+    float _cChk =  COLOR.r + COLOR.g + COLOR.b;
+    float _a = max(sign(_cChk - 0.8), 0.0);
     //----------------------------------------------
-    
+    COLOR.a = _a;
+    COLOR.rgb *= _a;
+
     return CoronaColorScale( COLOR );
 }
 ]]

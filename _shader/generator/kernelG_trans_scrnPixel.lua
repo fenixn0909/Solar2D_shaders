@@ -27,45 +27,42 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "screenWidth",
-    default = 64,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "screenHeight",
-    default = 64,
-    min = 1,
-    max = 9999,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "Progress",   default = .5, min = 0, max = 1, index = 0, },
+  { name = "R",       default = 0.0, min = 0, max = 1, index = 1, },
+  { name = "G",       default = 0.0, min = 0, max = 1, index = 2, },
+  { name = "B",       default = 0.0, min = 0, max = 1, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
-float time = 1.0;
-float screenWidth = CoronaVertexUserData.x;
-float screenHeight = CoronaVertexUserData.y;
+float Progress = CoronaVertexUserData.x;
+float R = CoronaVertexUserData.y;
+float G = CoronaVertexUserData.z;
+float B = CoronaVertexUserData.w;
+float A = 1;
 
+P_COLOR vec4 Col_Fill = vec4( R, G, B, A);
 
+vec2 ScreenRate = vec2( 1, 1 );
+
+//----------------------------------------------
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,96.233))) * 43758.5453);
 }
+//----------------------------------------------
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
   P_COLOR vec4 COLOR;
 
   // Test
-  time = CoronaTotalTime;
+  //Progress = CoronaTotalTime;
 
   // FRAGCOORD Snippet
   P_UV vec4 FRAGCOORD = gl_FragCoord;
-  P_UV vec2 SCREEN_PIXEL_SIZE = 1/ vec2(screenWidth, screenHeight);
+  P_UV vec2 SCREEN_PIXEL_SIZE = 1/ ScreenRate;
 
   vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
   vec2 uv = FRAGCOORD.xy / iResolution.xy;
@@ -76,10 +73,11 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
     floor(FRAGCOORD.x / resolution),
     floor(FRAGCOORD.y / resolution)
   );
-  
-  if(abs(sin(time)) > rand(lowresxy)){
-  COLOR = vec4(uv,0.5+0.5*sin(5.0 * FRAGCOORD.x),1.0);
-
+  Progress*=1.6;
+  if(abs(sin(Progress)) > rand(lowresxy)){
+  //COLOR = vec4(uv,0.5+0.5*sin(5.0 * FRAGCOORD.x),1.0);
+  //COLOR.rgb *= Col_Fill.rgb;
+  COLOR = Col_Fill;
   // Worked Rainbow Color
   //COLOR = vec4(texCoord,0.5+0.5*sin(5.0 * FRAGCOORD.x),1.0); 
   }else{

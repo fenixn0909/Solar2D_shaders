@@ -52,8 +52,6 @@ M.load_list = function( kFdr_, aFN_, iU_ )    --@kFilePrefix, @aFileName, @iUnio
             madShdr[iU_][_fileNm] = m.extract_info( _d[#_d] )
         end
     end
-    -- error("maaList: "..inspect(maaList))
-    -- error("madShdr: "..inspect(madShdr))
 end
 
 
@@ -182,6 +180,7 @@ M.bank_get_dVertext = function( ind_ )
 return  m.get_cur_data().vertexData    end
 M.bank_get_kernal = function( ind_ ) return m.get_kernal_path( m.get_cur_data()  )    end
 M.bank_get_fileName = function( ind_ ) return maaList[miUN_cur][ind_ or miBF_cur]    end
+
 m.get_kernal_path = function( d_ ) return d_.category.. '.' ..d_.group.. '.' ..d_.name    end
 
 m.get_cur_data = function(ind_)

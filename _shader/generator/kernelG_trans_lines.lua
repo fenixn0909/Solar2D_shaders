@@ -45,7 +45,6 @@ float num_lines = CoronaVertexUserData.y;
 vec4 line_color_a = vec4(1.); //: hint_color
 vec4 line_color_b = vec4(0., 1., 0., 1.0); //: hint_color
 
-
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
   P_COLOR vec4 finColor;

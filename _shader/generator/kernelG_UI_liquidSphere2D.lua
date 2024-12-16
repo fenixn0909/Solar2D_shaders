@@ -17,27 +17,23 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textPxW",
-    default = 600,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "textPxH",
-    default = 2000,
-    min = 1,
-    max = 9999,     
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "FillValue",   default = 0, min = 0, max = 1, index = 0, },
+  -- { name = "R",       default = 0.0, min = 0, max = 1, index = 1, },
+  -- { name = "G",       default = 0.0, min = 0, max = 1, index = 2, },
+  -- { name = "B",       default = 0.0, min = 0, max = 1, index = 3, },
+} 
 
 
 
 
 kernel.fragment =
 [[
+
+float FillValue = CoronaVertexUserData.x;
+
+
+//uniform float FillValue = -.75; //: hint_range(-1, 1)      //FillValue,填充球体的值
+
 
 uniform vec3 backFillColour = vec3(0.62,1.00,1.00);         //背景填充颜色
 uniform vec3 frontFillInnerColour = vec3(0.35,1.00,1.00);   //前景填充靠里的颜色
@@ -48,7 +44,6 @@ uniform vec3 innerRingGlowColour = vec3(0.00,1.00,1.00);    //内环发光颜色
 uniform vec4 fillcolour = vec4(1);                          //填充颜色调整
 uniform float ringWidth = 0.15;                             //环的宽度
 uniform float innerCircleRadiusOffset = 0.0;                //玻璃球与环的间隔
-uniform float fill_value = -.75; //: hint_range(-1, 1)      //fill_value,填充球体的值
 
 
 //----------------------------------------------
@@ -205,7 +200,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     float fillProgressAnimationFrequency = 1.0;
     float fillProgressAnimationAmplitude = 0.1;
     
-    float fillProgress = fill_value;//填充进度
+    float fillProgress = (FillValue-1.5)+FillValue*1.5 ;//填充进度
     
     fillProgress += sin((TIME * fillProgressAnimationFrequency) * PI) * fillProgressAnimationAmplitude;
     //fillProgress = (fillProgress - 0.5) * 2.0; 

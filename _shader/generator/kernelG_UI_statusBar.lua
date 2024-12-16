@@ -21,29 +21,11 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "progress",
-    default = 0.5,
-    min = 0,
-    max = 1,
-    index = 0,    
-  },
-  {
-    name = "progress_prev",
-    default = 0.82,
-    min = 0,
-    max = 1,
-    index = 1,    
-  },
-  {
-    name = "num_grids",
-    default = 7,
-    min = 0,
-    max = 99,
-    index = 2,    
-  },
-  
-}
+  { name = "Progress",      default = 0.5, min = 0, max = 1, index = 0, },
+  { name = "Prev",          default = 0.7, min = 0, max = 1, index = 1, },
+  { name = "Grids",         default = 10, min = 0, max = 100, index = 2, },
+  { name = "Smooth_Edge",   default = 0.2, min = 0, max = .65, index = 3, },
+} 
 
 kernel.fragment =
 [[
@@ -52,15 +34,16 @@ uniform sampler2D OVERLAY;
 
 float Progress = CoronaVertexUserData.x;
 float Prev = CoronaVertexUserData.y;
-lowp float Num_Grids = CoronaVertexUserData.z;
+lowp float Grids = CoronaVertexUserData.z;   
+float Smooth_Edge = CoronaVertexUserData.w;  // 0.2
+//----------------------------------------------
 
-P_COLOR vec4 Col_Base = vec4( 0.0, 0.0, 0.0, 1.0);
+P_COLOR vec4 Col_Base = vec4( 0.2, 0.0, 0.0, 1.0);
 P_COLOR vec4 Col_Bar = vec4( 0.7, 1.0, 0.8, 1.0);
 P_COLOR vec4 Col_Tween_Trans = vec4( 0.85, 0.35, 0.35, 1.0);  // To disable Tween: Set vec4 same with Col_Bar 
-P_COLOR vec4 Col_Sustain = vec4( 0.65, 0.3, 0.35, 1.0);
-P_COLOR vec3 Col_Reflect = vec3( 0.65, 0.75, .6);
+P_COLOR vec4 Col_Sustain = vec4( 0.55, 0.25, 0.3, 1.0);
+P_COLOR vec3 Col_Reflect = vec3( 0.55, 0.75, .6);
 
-float Smooth_Edge = 0.2;
 float Reflect_Thick_Upper = 0.175;
 float Reflect_Thick_Lower = 0.05;
 
@@ -118,8 +101,8 @@ P_DEFAULT float TIME = CoronaTotalTime; // * speed
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
     //=== Testing, Comment out when using vertexData
-    Progress = abs(sin(TIME*0.7));
-    Prev = abs(sin(TIME*0.3));
+    //Progress = abs(sin(TIME*0.7));
+    //Prev = abs(sin(TIME*0.3));
     //----------------------------------------------
 
     //=== Choose Direction
@@ -147,8 +130,8 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     COLOR.rgb -= COLOR.rgb * step;
 
     //=== Apply Grids
-    float gap = 1.0 / Num_Grids;
-    for (int i = 0; i < Num_Grids+1 ; i++){
+    float gap = 1.0 / Grids;
+    for (int i = 0; i < Grids+1 ; i++){
         COLOR.rgb -= 1.25 * get_stripe_strength( abs(uv_chk), i*gap, 0.01, .3+ abs(uv_chk)*.5);
     }
 

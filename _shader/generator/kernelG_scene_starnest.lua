@@ -23,25 +23,15 @@ kernel.language = "glsl"
 kernel.category = "generator"
 kernel.group = "scene"
 kernel.name = "starnest"
--- kernel.isTimeDependent = true -- High Overhead!
+kernel.isTimeDependent = true 
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "Speed",      default = 0.3, min = -3, max = 3, index = 0, },
+  { name = "Formuparam",     default = 0.865, min = 0.5, max = 1, index = 1, },
+  { name = "Stepsize",      default = 0.3, min = 0, max = 0.8, index = 2, },
+  { name = "Zoom",      default = 0.8, min = -10, max = 10, index = 3, },
+} 
 
 
 
@@ -64,24 +54,27 @@ P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
 kernel.fragment =
 [[
 
-uniform P_DEFAULT vec4 u_resolution;
+float Speed = CoronaVertexUserData.x;  
+float Formuparam = CoronaVertexUserData.y;  // Pattern
+float Stepsize = CoronaVertexUserData.z;
+float Zoom = CoronaVertexUserData.w;
 
+//----------------------------------------------
 
-P_DEFAULT int iterations = 20;
-P_DEFAULT float formuparam = 1.00;
+int iterations = 20;
+int volsteps = 20; // OVERHEAD if set it too much!
 
-P_DEFAULT int volsteps = 20;
-P_DEFAULT float stepsize = 0.1;
+//float Formuparam = 1.00;
+//float Stepsize = .3;
+//float Speed = .001;
+//float Zoom = .800;
+float Tile = 1.857; //957
 
-P_DEFAULT float zoom = 0.800;
-P_DEFAULT float tile = 0.5;
-P_DEFAULT float speed = 0.001;
-
-P_DEFAULT float brightness = 0.002;
-P_DEFAULT float darkmatter = 0.100;
-P_DEFAULT float distfading = 0.650;
-P_DEFAULT float saturation = 0.750;
-
+float brightness = 0.002;
+float darkmatter = 0.100;
+float distfading = 0.650;
+float saturation = 0.750;
+//----------------------------------------------
 
 P_DEFAULT float SCurve (P_DEFAULT float value) {
 
@@ -95,61 +88,64 @@ P_DEFAULT float SCurve (P_DEFAULT float value) {
     return value * value * value * value * value * 16.0 + 1.0;
 }
 
+//----------------------------------------------
+float TIME = CoronaTotalTime*Speed;
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
-  vec2 iResolution = 1.0 / vec2(1.0,1.0);
+    vec2 iResolution = 1.0 / vec2(1.0,1.0);
 
-  //get coords and direction
-  //vec2 uv=FRAGCOORD.xy/iResolution.xy;
-  vec2 uv=texCoord.xy/iResolution.xy;
-  uv.y*=iResolution.y/iResolution.x;
-  vec3 dir=vec3(uv*zoom,1.);
-  float time=CoronaTotalTime*speed;
+//----------------------------------------------
 
-  vec3 from=vec3(1.0,0.5,0.5);
-  from-=vec3(0.0,time,0.0);
-  
-  //volumetric rendering
-  float s=0.1,fade=1.;
-  vec3 v=vec3(0.);
-  for (int r=0; r<volsteps; r++) {
-    lowp vec3 p=from+s*dir*0.5;
-    p = abs(vec3(tile)-mod(p,vec3(tile*2.))); // tiling fold
-    lowp float pa,a=pa=0.;
-    for (int i=0; i<iterations; i++) { 
-      p=abs(p)/dot(p,p)-formuparam; // the magic formula
-      a+=abs(length(p)-pa); // absolute sum of average change
-      pa=length(p);
+    //get coords and direction
+    //vec2 uv=FRAGCOORD.xy/iResolution.xy;
+    vec2 uv=UV.xy/iResolution.xy;
+    uv.y*=iResolution.y/iResolution.x;
+    vec3 dir=vec3(uv*Zoom,1.);
+
+    vec3 from=vec3(1.0,0.5,0.5);
+    from-=vec3(0.0,TIME,0.0);
+
+    //volumetric rendering
+    float s=0.1,fade=1.;
+    vec3 v=vec3(0.);
+    for (int r=0; r<volsteps; r++) {
+        lowp vec3 p=from+s*dir*0.5;
+        p = abs(vec3(Tile)-mod(p,vec3(Tile*2.))); // tiling fold
+        lowp float pa,a=pa=0.;
+        for (int i=0; i<iterations; i++) { 
+          p=abs(p)/dot(p,p)-Formuparam; // the magic formula
+          a+=abs(length(p)-pa); // absolute sum of average change
+          pa=length(p);
+        }
+        lowp float dm=max(0.,darkmatter-a*a*.001); //dark matter
+        a = pow(a, 2.3); // add contrast
+        if (r>6) fade*=1.-dm; // dark matter, don't render near
+        v+=fade;
+        v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; // coloring based on distance
+        fade*=distfading; // distance fading
+        s+=Stepsize;
     }
-    lowp float dm=max(0.,darkmatter-a*a*.001); //dark matter
-    a = pow(a, 2.3); // add contrast
-    if (r>6) fade*=1.-dm; // dark matter, don't render near
-    v+=fade;
-    v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; // coloring based on distance
-    fade*=distfading; // distance fading
-    s+=stepsize;
-  }
-    
-  v=mix(vec3(length(v)),v,saturation); //color adjust
-    
-  vec4 C = vec4(v*.01,1.);
-  
-  C.r = pow(C.r, 0.35); 
-  C.g = pow(C.g, 0.36); 
-  C.b = pow(C.b, 0.38); 
 
-  vec4 L = C;     
-  
-  P_COLOR vec4 finColor;
+    v=mix(vec3(length(v)),v,saturation); //color adjust
 
-  finColor.r = mix(L.r, SCurve(C.r), 0.7); 
-  finColor.g = mix(L.g, SCurve(C.g), 1.0); 
-  finColor.b = mix(L.b, SCurve(C.b), 0.2); 
-  finColor.a = 1;
+    vec4 C = vec4(v*.01,1.);
 
-  return CoronaColorScale(finColor);
+    C.r = pow(C.r, 0.35); 
+    C.g = pow(C.g, 0.36); 
+    C.b = pow(C.b, 0.38); 
+
+    vec4 L = C;     
+
+    P_COLOR vec4 finColor;
+
+    finColor.r = mix(L.r, SCurve(C.r), 0.7); 
+    finColor.g = mix(L.g, SCurve(C.g), 1.0); 
+    finColor.b = mix(L.b, SCurve(C.b), 0.2); 
+    finColor.a = 1;
+
+    return CoronaColorScale(finColor);
 }
 ]]
 

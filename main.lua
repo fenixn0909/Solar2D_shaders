@@ -74,6 +74,8 @@ local file_get_match_sub = function( sPth_, sPtrn_, sTrim_ ) --@strPath, @strPat
     end
 return _a    end
 ----------------------------------------------------------------------------------------------------
+--=== Image
+local mtiPage = { pgPrama= 1, pgTexture= 2, pgFile= 3 }
 
 --=== Image
 local maoImage = {} -- 1:Background, 2:Sprite, 3:Noise
@@ -162,7 +164,9 @@ M.init = function()
     m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_UI_statusBar' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_UI_statusBar' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_starFall' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudSimple' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_PP_trippyWobble' )
     -- m.apply_specific_shader( mC_akCate[3], 'kernelF_trans_rippleBurnOut' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_wobble_ripple' )
@@ -175,14 +179,27 @@ end
 -- Initiation
 ----------------------------------------------------------------------------------------------------
 
+-- m.init_text_field = function( grp_, toText_ )
+
+--     local _field = native.newTextField( SCRN_DL+100, SCRN_DB-40, 200, 40 )
+--     _field.text = "abcd"
+
+-- end
+-- m.init_text_field()
 --=== File Text
 m.init_file_text = function( grp_, toText_ )
     local _bX = SCRN_DL + 8
     local _bY = SCRN_DSOY+320 + 50
     local _dY = 25
     local _toText = {}
-    toText_.filename =  display.newText{ align= 'left', x= _bX, y= _bY , fontSize= 16, text= '', font=  native.systemFont };  toText_.filename.anchorX = 0
-    toText_.kernal =  display.newText{ align= 'left', x= _bX, y= _bY+_dY, fontSize= 16, text= '', font=  native.systemFont };  toText_.kernal.anchorX = 0
+    -- toText_.filename =  display.newText{ align= 'left', x= _bX, y= _bY , fontSize= 16, text= '', font=  native.systemFont };  toText_.filename.anchorX = 0
+    -- toText_.kernal =  display.newText{ align= 'left', x= _bX, y= _bY+_dY, fontSize= 16, text= '', font=  native.systemFont };  toText_.kernal.anchorX = 0
+    
+    toText_.filename =  native.newTextField( _bX, _bY, 270, 20);        toText_.filename.anchorX = 0  --{ align= 'left', x= _bX, y= _bY , fontSize= 16, text= '', font=  native.systemFont };  toText_.filename.anchorX = 0
+    toText_.kernal =  native.newTextField( _bX, _bY+_dY, 270, 20 );     toText_.kernal.anchorX = 0  --{ align= 'left', x= _bX, y= _bY+_dY, fontSize= 16, text= '', font=  native.systemFont };  toText_.kernal.anchorX = 0
+    
+
+
     grp_:insert( toText_.filename )
     grp_:insert( toText_.kernal )
 end
@@ -355,7 +372,7 @@ m.upd_img = function( iT_, iI_ ) --@indexType, @indexImage
     maiImgCur[iT_] = iI_
     if maoImage[iT_] then maoImage[iT_].parent:remove( maoImage[iT_] ) end
     maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeWH, _sizeWH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeWH*.5+32 );
-
+    
     -- Apply Shader: when Sprite changed
     if iT_ == 2 then    shdilr:bank_apply( maoImage[2], {} ) end
 
@@ -477,7 +494,8 @@ mm.swap_menu = function( k_ )    local _iNew    assert( (k_=='+' or k_=='-'), "i
     mm.trig_switch(_iNew)
 end
 mm.trig_switch = function( i_ )
-    toggle_visible( false, maoGrp[1], maoGrp[2], maoGrp[3]);    maoGrp[i_].isVisible = true
+    toggle_visible( false, maoGrp[1], maoGrp[2], maoGrp[3], mtoText.filename, mtoText.kernal);    maoGrp[i_].isVisible = true
+    if i_ == mtiPage['pgFile'] then toggle_visible(true, mtoText.filename, mtoText.kernal) end
     miSwitchCur = i_;    maoSwitch[i_]:setState({ isOn= true })
 end
 mm.swap_img = function( k_, i_ )    local _iNew     --@keyOpt, @indImgType

@@ -86,6 +86,7 @@ P_COLOR vec4 backColor = u_UserData0[1];
 
 float offset = u_UserData1[0];      // : hint_range( -0.5, 1.5, 10) Reverse Cloud if the cal result is minus
 float size = u_UserData1[1];        // : hint_range( 0.1, 2.5, 10) Higher the smaller + slower
+
 float speed = u_UserData1[2];       // : hint_range(-0.5, 5.0)
 float lyr_step = u_UserData1[3];    // : hint_range( 0.05, 0.1) Lower the more
 

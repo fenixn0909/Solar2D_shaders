@@ -17,60 +17,45 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textPxW",
-    default = 600,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "textPxH",
-    default = 2000,
-    min = 1,
-    max = 9999,     
-    index = 1,    -- v_UserData.y
-  },
-}
-
-
-
+  { name = "Speed",     default = 1, min = -5, max = 5, index = 0, },
+  { name = "Pattern",   default = 0.0, min = -7, max = 7, index = 1, },
+  { name = "PanX",      default = 800., min = -2000, max = 20000, index = 2, },
+  { name = "PanY",      default = 800., min = -2000, max = 20000, index = 3, },
+} 
 
 kernel.fragment =
 [[
 
-float textPxW = CoronaVertexUserData.x;
-float textPxH = CoronaVertexUserData.y;
-
-P_UV vec2 SCREEN_PIXEL_SIZE = 1/vec2( textPxW, textPxH );
-//P_UV vec2 SCREEN_PIXEL_SIZE = 1/vec2( 200, 200 );
-
+float Speed = CoronaVertexUserData.x;
+float Pattern = CoronaVertexUserData.y;
+float PanX = CoronaVertexUserData.z;
+float PanY = CoronaVertexUserData.w;
 //----------------------------------------------
-
-//uniform bool enabled = false;
-uniform bool enabled = true;
-
-//----------------------------------------------
-
+float Bright = 0.0;
+bool enabled = true;
 
 //----------------------------------------------
 
 P_COLOR vec4 COLOR;
-P_DEFAULT float TIME = CoronaTotalTime; // * speed
+P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+P_DEFAULT float TIME = CoronaTotalTime * Speed; // * speed
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-    vec4 FRAGCOORD = gl_FragCoord; 
+    //vec4 FRAGCOORD = gl_FragCoord; 
+    vec2 FRAGCOORD = UV ; 
+    FRAGCOORD.x *= PanX;
+    FRAGCOORD.y *= PanY;
+
     //----------------------------------------------
 
     // Called for every pixel the material is visible on.
     
     if (enabled){
-        float s = 0.0, v = 0.0;
-        //vec2 ires = 1.0 / SCREEN_PIXEL_SIZE;
-        vec2 ires = 1.0 / CoronaTexelSize.zw;
-        //vec2 uv = (FRAGCOORD.xy/ ires) * 2.0 - 1.;
-        vec2 uv = (UV.xy/ ires) * 2.0 - 1.;
+        float s = Pattern, v = Bright;
+        vec2 ires = 1.0 / SCREEN_PIXEL_SIZE;
+        vec2 uv = (FRAGCOORD.xy/ ires) * 2.0 - 1.;
+        //vec2 uv = (UV.xy/ ires) * 2.0 - 1.;
         //vec2 uv = ( CoronaTexelSize.xy / ires) * 2.0 - 1.;
         
         float itime = (TIME-2.0)*58.0;

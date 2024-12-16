@@ -22,52 +22,43 @@ kernel.category = "generator"
 kernel.group = "BG"
 kernel.name = "electricHatch"
 
---Test
 kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
-
+  { name = "Speed",           default = 0.05, min = 0, max = 2, index = 0, },
+  { name = "Rotate_Speed",    default = 1.1, min = -360, max = 360, index = 1, },
+  { name = "Line_Width",      default = 0.1, min = 0, max = 1, index = 2, },
+  { name = "Line_Size",       default = 0.1, min = 0, max = 8, index = 3, },
+} 
 
 kernel.fragment =
 [[
-const float PI = 3.1415926535;
 
-uniform float speed = 0.05;
+float Speed = CoronaVertexUserData.x;
+float Rotate_Speed = CoronaVertexUserData.y;
+float Line_Width = CoronaVertexUserData.z;
+float Line_Size = CoronaVertexUserData.w;
+//----------------------------------------------
+
+const float PI = 3.1415926535;
 uniform vec2 scale = vec2( 8.0, 4.5 );
-uniform float rotate_speed = 1.1;
-uniform float line_width = 0.1; //: hint_range( 0.0, 1.0 ) 
-uniform float line_size = 0.1;
 
 uniform vec4 back_color = vec4( 0.0, 0.0, 0.0, 1.0 ); //: hint_color 
 uniform vec4 line_color = vec4( 0.0, 1.0, 1.0, 1.0 ); //: hint_color
 
+//----------------------------------------------
 float get_ratio_scan_line( float p )
 {
   return max(
-    -sin( mod( p, line_size ) / line_size * PI ) + line_width
+    -sin( mod( p, Line_Size ) / Line_Size * PI ) + Line_Width
   , 0.0
-  ) / line_width;
+  ) / Line_Width;
 }
 
 float hatch( vec2 src_uv, float time, float dir )
 {
-  float r = time * rotate_speed * dir;
+  float r = time * Rotate_Speed * dir;
   float c = cos( r );
   float s = sin( r );
   mat2 matr = mat2(
@@ -84,19 +75,20 @@ float hatch( vec2 src_uv, float time, float dir )
   , 1.0
   );
 }
-
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+//----------------------------------------------
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
   // Pixelate
-  P_UV vec2 UV_Pix = (CoronaTexelSize.zw * 0.5) + ( floor( texCoord / CoronaTexelSize.zw ) * CoronaTexelSize.zw );
+  P_UV vec2 UV_Pix = (CoronaTexelSize.zw * 0.5) + ( floor( UV / CoronaTexelSize.zw ) * CoronaTexelSize.zw );
   //P_UV vec2 SCREEN_UV = UV_Pix;
   // Smooth
-  P_UV vec2 SCREEN_UV = texCoord;
+  P_UV vec2 SCREEN_UV = UV;
   P_COLOR vec4 COLOR;
+  //----------------------------------------------
 
   float TIME = CoronaTotalTime;
-  float time = mod( TIME * speed, 0.3 ) / 0.3;
+  float time = mod( TIME * Speed, 0.3 ) / 0.3;
   float f = clamp(
     hatch( SCREEN_UV, time, 1.0 )
   + hatch( SCREEN_UV, mod( time + 0.5, 1.0 ), -1.0 )
@@ -105,6 +97,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
   );
 
   COLOR = mix( back_color, line_color, f );
+  //----------------------------------------------
 
   return CoronaColorScale(COLOR);
 }

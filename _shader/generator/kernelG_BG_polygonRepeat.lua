@@ -21,47 +21,42 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "texWidth",
-    default = 4,
-    min = 1,
-    max = 9999,
-    index = 0,    
-  },
-  {
-    name = "texHeight",
-    default = 4,
-    min = 1,
-    max = 9999,     
-    index = 1,    
-  },
-}
-
+  { name = "Speed",           default = .1, min = -3, max = 3, index = 0, },
+  { name = "Repeat",           default = 0.05, min = -2, max = 2, index = 1, },
+  { name = "Rot_Speed",          default = 1.1, min = -10, max = 10, index = 2, },
+  { name = "Sides",          default = 3, min = 0, max = 15, index = 3, },
+} 
 
 kernel.fragment =
 [[
-P_UV vec2 iResolution = vec2(1. ,1.);
-P_UV vec2 texSize = vec2( CoronaVertexUserData.x, CoronaVertexUserData.y );
 
+float Speed = CoronaVertexUserData.x;
+float Repeat = CoronaVertexUserData.y;
+float Rot_Speed = CoronaVertexUserData.z;
+float Sides = CoronaVertexUserData.w;
+//----------------------------------------------
+
+P_UV vec2 iResolution = 1.0 / CoronaTexelSize.zw;
 
 //----------------------------------------------
   #define isTween
 
   #define PI 3.14159265359
   #define TAU 6.28318530718
-  #define pixel_width 50.*repeat*3./max(texSize.y,texSize.x)
+  #define pixel_width 50.*Repeat*3./max(iResolution.y,iResolution.x)
 
-  #define repeat 0.5 // .05 incr for more
-  #define speed 0.5 // .1
-  #define sides 16  // 16: parachute 32: nearly circle, 64: perfect circle?
+  //#define Repeat 0.05 // .05 incr for more
+  //#define Speed 0.1 // .1
+  //#define Sides 6  // 16: parachute 32: nearly circle, 64: perfect circle?
+  //#define width 1.0 // 1.   #define width 0.5 // 1.
   
-  #define rotation_speed 0.2 // .1
+  //#define Rot_Speed 1.1 // .1
 
   vec3 lineColor = vec3(1, .2, 0);
-
-  float width = 0.5; // 1.   #define width 0.5 // 1.
   float lineOpacity = 0.5;
+  float width = 0.5;
 
+//----------------------------------------------
 
   float stroke(float d, float size) {
     return smoothstep(pixel_width,0.0,abs(d-size)-width/2.);
@@ -76,7 +71,7 @@ P_UV vec2 texSize = vec2( CoronaVertexUserData.x, CoronaVertexUserData.y );
   float polygonSDF(vec2 _uv) {
     // Angle and radius from the current pixel
     float a = atan(_uv.x,_uv.y)+PI;
-    float r = TAU/float(floor(sides));
+    float r = TAU/float(floor(Sides));
 
     return cos(floor(.5+a/r)*r-a)*length(_uv);
   }
@@ -86,40 +81,39 @@ P_UV vec2 texSize = vec2( CoronaVertexUserData.x, CoronaVertexUserData.y );
     return abs( mod(a, 2.) - 1.);
   }
 
-
 // -----------------------------------------------
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 COLOR;
+P_DEFAULT float iTime = CoronaTotalTime;
+
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_UV vec2 fragCoord = ( texCoord.xy / iResolution );
-  P_COLOR vec4 COLOR;
-  P_DEFAULT float iTime = CoronaTotalTime;
 
-  #ifdef isTween
-    lineOpacity += sin(CoronaTotalTime*.25)* 0.5;
-    width += sin(CoronaTotalTime*.25)* 1;
-    //opacityScanline += abs(sin(CoronaTotalTime)) * .5  ; //50
-  #endif
-  //----------------------------------------------
-    vec2 R = iResolution.xy;
-    //vec2 R = texSize.xy;
-    vec2 U = ( 2.* fragCoord - R ) / R.y;
-    U = rotate(U,iTime*rotation_speed);
-    U *= repeat*50.;
-    float c = stroke(smoothmodulo(polygonSDF(U)+iTime*10.*speed),1.);
+    #ifdef isTween
+    lineOpacity += sin(iTime*.25)* 0.5;
+    width += sin(iTime*.25)* 1;
+    #endif
+    //----------------------------------------------
 
-    //COLOR = vec4(vec3(c),1.);   
+    vec2 R = iResolution.xy * 0.001;
+    vec2 U = ( 2.* UV - R ) / R.y;
+    U = rotate(U,iTime * Rot_Speed);
+    U *= Repeat*50.;
+    float c = stroke(smoothmodulo(polygonSDF(U)+iTime*10.*Speed),1.);
+
+    COLOR = vec4(vec3(c),1.);   
 
     // Apply Color
     COLOR.rgb = lineColor*c;
-      
-  //----------------------------------------------
-  COLOR.a = c;
-  COLOR.rgb *= COLOR.a;
-  COLOR.a = lineOpacity * COLOR.r;
-  COLOR.rgb *= COLOR.a;
+    COLOR.a = lineOpacity;
 
-  return CoronaColorScale( COLOR );
+    //----------------------------------------------
+    //COLOR.a = c;
+    //COLOR.rgb *= COLOR.a;
+    //COLOR.a = lineOpacity * COLOR.r;
+    //COLOR.rgb *= COLOR.a;
+
+    return CoronaColorScale( COLOR );
 }
 ]]
 

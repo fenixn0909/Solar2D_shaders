@@ -19,25 +19,29 @@ kernel.group = "BG"
 kernel.name = "colorNoise"
 
 
-kernel.isTimeDependent = true
-
 kernel.vertexData =
 {
-  
-}
-
+  { name = "Speed",     default = 1.2, min = -5, max = 5, index = 0, },
+  { name = "Zoom",   default = 12, min = -20, max = 20, index = 1, },
+  { name = "Cell",      default = 5, min = -20, max = 200, index = 2, },
+  { name = "Pan",      default = 0.5, min = 0, max = 1, index = 3, },
+} 
 
 kernel.fragment =
 [[
-P_UV vec2 iResolution = vec2(1. ,1.);
+
+float Speed = CoronaVertexUserData.x;
+float Zoom = CoronaVertexUserData.y;
+float Cell = CoronaVertexUserData.z;
+float Pan = CoronaVertexUserData.w;
+//----------------------------------------------
 
 
 //----------------------------------------------
   #define PI 3.14159265359
+  
 
-  float speed = 1.2; // 2.
-
-
+//----------------------------------------------
   vec3 mod289(vec3 x) { 
     return x - floor(x * (1.0 / 289.0)) * 289.0; 
   }
@@ -109,7 +113,7 @@ P_UV vec2 iResolution = vec2(1. ,1.);
   }
 
   float lines(in vec2 st, float b) {
-    float scale = 5.;
+    float scale = Cell;
     st *= scale;
 
     return smoothstep(
@@ -127,24 +131,24 @@ P_UV vec2 iResolution = vec2(1. ,1.);
 
 // -----------------------------------------------
 
+P_COLOR vec4 COLOR;
+P_DEFAULT float TIME = CoronaTotalTime;
+
+P_UV vec2 iResolution = vec2(1. ,1.);
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
-  P_UV vec2 fragCoord = ( texCoord.xy / iResolution );
-  P_COLOR vec4 COLOR;
-  P_DEFAULT float iTime = CoronaTotalTime;
-
-  #ifdef isTween
-    lineOpacity += sin(CoronaTotalTime*.25)* 0.5;
-    width += sin(CoronaTotalTime*.25)* 1;
-    //opacityScanline += abs(sin(CoronaTotalTime)) * .5  ; //50
-  #endif
-  //----------------------------------------------
+  
+    P_UV vec2 fragCoord = ( texCoord.xy / iResolution );
+      
+    //----------------------------------------------
     vec2 st = fragCoord;
-    vec2 ps = st - vec2(.5);
-    st *= 12.;
+    //vec2 ps = st - vec2(.5);
+    vec2 ps = vec2( st.x - Pan , st.y - Pan );
+    st *= Zoom;
 
     float noise = snoise(st) * .43 + .48;
-    float len = 1. - smoothstep(.0, .6 + .5 * sin(iTime * speed), length(ps));
+    float len = 1. - smoothstep(.0, .6 + .5 * sin(TIME * Speed), length(ps));
     float pattern = lines(vec2(noise) * len, .3);
 
     COLOR = vec4(
@@ -155,15 +159,12 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
       ), 
     1.);
       
-  //----------------------------------------------
-  
-  COLOR.a = (COLOR.a+COLOR.g+COLOR.b)/3;
+    //----------------------------------------------
 
-  COLOR.rgb *= COLOR.a;
-  //COLOR.a = lineOpacity * COLOR.r;
-  //COLOR.rgb *= COLOR.a;
+    COLOR.a = (COLOR.a+COLOR.g+COLOR.b)/3;
+    COLOR.rgb *= COLOR.a;
 
-  return CoronaColorScale( COLOR );
+    return CoronaColorScale( COLOR );
 }
 ]]
 

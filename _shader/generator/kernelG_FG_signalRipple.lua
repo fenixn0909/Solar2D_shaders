@@ -18,34 +18,29 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "speed",
-    default = 5,
-    min = -99,
-    max = 99,
-    index = 0, 
-  },
-}
-
+  { name = "Speed",           default = 5, min = -30, max = 30, index = 0, },
+  { name = "Size",           default = 0.8, min = 0, max = 20, index = 1, },
+  { name = "Zoom",          default = 8., min = -150, max = 150, index = 2, },
+} 
 
 kernel.fragment =
 [[
 
+float Speed = CoronaVertexUserData.x;
+float Size = CoronaVertexUserData.y;
+float Zoom = CoronaVertexUserData.z;
 //----------------------------------------------
 
 uniform vec4 color_signal = vec4 (0.3, 0.1, 0.0, 0.2); // : hint_color 
-uniform float size = 0.8; //: hint_range(0.0, 1.0, 0.01) 
-uniform float zoom = 8.0; //: Incre => More Ripple & Thiner.  hint_range(0.0, 20, 1)
-//uniform float speed = 5.0; //: hint_range(-10.0, 10.0, 1.0) 
-float speed = CoronaVertexUserData.x; //: hint_range(-10.0, 10.0, 1.0) 
-
 
 // -----------------------------------------------
+
+P_COLOR vec4 fragColor;
+P_DEFAULT float TIME = CoronaTotalTime;
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_COLOR vec4 fragColor;
-  //P_COLOR vec2 UV = fragCoord;
-  P_DEFAULT float TIME = CoronaTotalTime;
+  
   //----------------------------------------------
   
   float d = length((UV-0.5)*2.0);
@@ -58,19 +53,15 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
   // For idle color, delete "//" below :
   color = vec4(color_signal.rgb,1.0);
 
-  d = sin(zoom*d - speed*TIME);
+  d = sin(Zoom*d - Speed*TIME);
   d = abs(d);
-  d = size/d;
+  d = Size/d;
   color *= d*t;
   
-
   fragColor = vec4(color);
-
   
   //----------------------------------------------
-  //fragColor = vec4( 1., 0., 0., 1.);
 
-  //return CoronaColorScale( color );
   return CoronaColorScale( fragColor );
 }
 ]]
