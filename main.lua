@@ -164,7 +164,7 @@ M.init = function()
     m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_UI_statusBar' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FG_snow' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_starFall' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudSimple' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_PP_trippyWobble' )

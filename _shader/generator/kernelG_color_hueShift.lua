@@ -1,9 +1,12 @@
 
 --[[
 
-  Origin Author: dysposin
-  https://www.shadertoy.com/view/3dsyRj
-  Hue shift of image in CIElab color space.
+    Origin Author: dysposin
+    https://www.shadertoy.com/view/3dsyRj
+    Hue shift of image in CIElab color space.
+
+
+    Find and go #VARIATION and tweak them for different patterns
 
 --]]
 
@@ -20,13 +23,15 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  { name = "Speed",           default = .8, min = 0, max = 120, index = 0, },
-  } 
+    { name = "Speed",   default = 5, min = 0, max = 30, index = 0, },
+    { name = "Alpha",   default = .5, min = 0, max = 1, index = 1, },
+} 
 
 kernel.fragment =
 [[
 
 float Speed = CoronaVertexUserData.x;
+float Alpha = CoronaVertexUserData.y;
 //----------------------------------------------
 
 P_UV vec2 iResolution = vec2(1,1);
@@ -76,28 +81,24 @@ vec3 xyz2lab(vec3 xyz)
 
 P_DEFAULT float iTime = CoronaTotalTime;
 
-
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
     P_UV vec2 fragCoord = texCoord / iResolution;
     P_COLOR vec4 COLOR;
-    P_DEFAULT float alpha = abs(sin(CoronaTotalTime * Speed)) -0.15;
+
+    // Tween alpha  #VARIATION
+    float alpha = abs(sin(iTime * Speed)) * Alpha;
     //----------------------------------------------
 
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord/iResolution.xy;
 
     // Time varying pixel color
-    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-
-    // Output to screen
-    //fragColor = vec4(col,1.0);
-
+    vec3 col = 0.5 + 0.5*cos( iTime + uv.xyx + vec3(0,2,4));
 
     //----------------------------------------------
-    COLOR = vec4(col,1.0);
-    COLOR.a = alpha;
-
+    COLOR = vec4(col,alpha);
+    COLOR.rgb*= COLOR.a;
 
     return CoronaColorScale( COLOR );
 }

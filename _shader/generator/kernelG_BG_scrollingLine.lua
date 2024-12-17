@@ -17,35 +17,25 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "Speed",         default = 3, min = 0, max = 100, index = 0, },
+  { name = "Angle",         default = 60, min = 0, max = 360, index = 1, },
+  { name = "Lines",         default = 2, min = 0, max = 100, index = 2, },
+  { name = "Blur",          default = .1, min = 0, max = 3, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
+float Speed = CoronaVertexUserData.x;
+float Angle = CoronaVertexUserData.y; 
+float Lines = CoronaVertexUserData.z;
+float Blur = CoronaVertexUserData.w;
+
 //----------------------------------------------
 
 uniform vec3 color_one = vec3( 0.9, 0.7, 0.3 ); //: source_color; 
 uniform vec3 color_two = vec3( 0.8, 0.2, 0.3 ); //: source_color;  
-
-uniform float angle = 60.0;
-uniform float line_count = 20.0; 
-uniform float speed = 1.0; 
-uniform float blur = 0.1; //: hint_range(0.0, 2.0, 0) 
 
 //----------------------------------------------
 
@@ -64,9 +54,8 @@ vec2 rotate(vec2 uv, float rotation_angle) {
 }
 
 float stripe(vec2 uv) {
-    return cos(uv.x * 0.0 - TIME*speed + uv.y * -line_count/2.0);
+    return cos(uv.x * 0.0 - TIME*Speed + uv.y * -Lines*10 * .5);
 }
-
 
 //----------------------------------------------
 
@@ -79,13 +68,12 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
   vec2 resolution = 1.0 / TEXTURE_PIXEL_SIZE;
   float a = TEXTURE_PIXEL_SIZE.x / TEXTURE_PIXEL_SIZE.y;
   uv.x *= a;
-  uv = rotate(uv, angle);
+  uv = rotate(uv, Angle);
   float g = stripe(uv);
-  vec3 col = mix(color_one, color_two, smoothstep(0.0, blur, g));
+  vec3 col = mix(color_one, color_two, smoothstep(0.0, Blur, g));
   COLOR = vec4(col, 1.0);
 
   //----------------------------------------------
-
 
   return CoronaColorScale( COLOR );
 }

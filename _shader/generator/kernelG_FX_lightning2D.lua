@@ -24,72 +24,65 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
+  { name = "Speed",         default = .25, min = 0, max = 5, index = 0, },
+  { name = "Cycle",         default = 12, min = 0, max = 30, index = 1, },
+  { name = "Size",         default = .05, min = 0, max = 1, index = 2, },
+  { name = "Width",          default = .5, min = 0, max = 30, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
-uniform P_DEFAULT vec4 u_resolution;
+float Speed = CoronaVertexUserData.x;
+float Cycle = CoronaVertexUserData.y; 
+float Size = CoronaVertexUserData.z;
+float Width = CoronaVertexUserData.w;
 
-vec4 lightning_color = vec4( 1., 0., 0., 1.); //: hint_color
+//----------------------------------------------
+
+vec4 lightning_color = vec4( .9, 1.0, 0.7, .8); //: hint_color
+
+float Ratio = .2;
+float Time_shift = 3;
 
 const float PI = 3.14159265359;
 
-float size = 0.05; //: hint_range (0.,1.);
-float width = 0.5; //: hint_range (0.,1.);
-float speed = 0.25;
-float cycle = 3;
-float ratio = 0.1;
-float time_shift = 3;
-
-
+//----------------------------------------------
 float rand(float x){
-  return fract(sin(x)*100000.0);
+    return fract(sin(x)*100000.0);
 }
+//----------------------------------------------
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 COLOR;
+
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
   
-  P_RANDOM float bolt = abs(mod(texCoord.y * cycle + (rand(CoronaTotalTime) + time_shift) * speed * -1., 0.5)-0.25)-0.125;
-  bolt *= 4. * width;
-  // why 4 ? Because we use mod 0.5, the value be devide by half
-  // and we -0.25 (which is half again) for abs function. So it 25%!
-  
-  // scale down at start and end
-  bolt *=  (0.5 - abs(texCoord.y-0.5)) * 2.; 
-  
-  // turn to a line
-  // center align line
-  float wave = abs(texCoord.x - 0.5 + bolt);
-  // invert and ajust size
-  wave = 1. - step(size*.5, wave);
-  
-  float blink = step(rand(CoronaTotalTime)*ratio, .5);
-  wave *= blink;
-  
-  vec4 display = lightning_color * vec4(wave);
-  
-  //COLOR = display;
+    P_RANDOM float bolt = abs(mod(UV.y * Cycle + (rand(CoronaTotalTime) + Time_shift) * Speed * -1., 0.5)-0.25)-0.125;
+    bolt *= 4. * Width;
+    // why 4 ? Because we use mod 0.5, the value be devide by half
+    // and we -0.25 (which is half again) for abs function. So it 25%!
 
+    // scale down at start and end
+    bolt *=  (0.5 - abs(UV.y-0.5)) * 2.; 
 
-  P_COLOR vec4 finColor = display;
+    // turn to a line
+    // center align line
+    float wave = abs(UV.x - 0.5 + bolt);
+    // invert and ajust size
+    wave = 1. - step(Size*.5, wave);
 
-  return CoronaColorScale(finColor);
+    float blink = step(rand(CoronaTotalTime)*Ratio, .5);
+    wave *= blink;
+
+    vec4 display = lightning_color * vec4(wave);
+
+    COLOR = display;
+
+    //----------------------------------------------
+
+    return CoronaColorScale( COLOR );
 }
 ]]
 
