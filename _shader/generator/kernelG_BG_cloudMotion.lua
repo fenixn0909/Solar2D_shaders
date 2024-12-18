@@ -23,8 +23,8 @@ kernel.uniformData =
     {
         name = "colorMat4",
         default = {
-            1.0, 1.0, 1.0, 1.0,     -- Cloud Color
-            0.18, 0.70, 0.87, 1.0,     -- backColor
+            1.0, 1.0, 1.0, 1.0,         -- Cloud Color
+            0.18, 0.70, 0.87, 1.0,      -- backColor
             0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0,
         },
@@ -81,8 +81,6 @@ uniform vec4 u_UserData1; // setting
 
 P_COLOR vec4 cloudColor = u_UserData0[0];
 P_COLOR vec4 backColor = u_UserData0[1];
-
-
 
 float offset = u_UserData1[0];      // : hint_range( -0.5, 1.5, 10) Reverse Cloud if the cal result is minus
 float size = u_UserData1[1];        // : hint_range( 0.1, 2.5, 10) Higher the smaller + slower

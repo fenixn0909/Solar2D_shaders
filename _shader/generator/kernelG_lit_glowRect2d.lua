@@ -18,64 +18,57 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "resolutionX",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 0, 
-  },
-  {
-    name = "resolutionY",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 1, 
-  },
-}
-
+  { name = "Speed",         default = 6, min = 0, max = 50, index = 0, },
+  { name = "RectWH",        default = 3, min = 0, max = 25, index = 1, },
+  { name = "Glow_Max",      default = 4, min = -5, max = 50, index = 2, },
+  { name = "Scale_FallOff", default = 3, min = 0.01, max = 5, index = 3, },
+} 
 
 kernel.fragment =
 [[
 
+float Speed = CoronaVertexUserData.x;
+float RectWH = CoronaVertexUserData.y;
+float Glow_Max = CoronaVertexUserData.z;
+float Scale_FallOff = CoronaVertexUserData.w;
 
-P_DEFAULT float resolutionX = CoronaVertexUserData.x;
-P_DEFAULT float resolutionY = CoronaVertexUserData.y;
-P_UV vec2 iResolution = vec2(resolutionX,resolutionY);
 //----------------------------------------------
 
-//render_mode blend_add;
 
-P_COLOR vec3 color = vec3(.1, .5, .3);
-P_DEFAULT float max_glow = 4.0;
-
-uniform vec2 rect_size = vec2(.051, .051);
-uniform float bness = 1.0;
-uniform float fall_off_scale = 3.0; // The less the larger
+uniform float Brightness = 3.0;
+//uniform float Scale_FallOff = 3.0; // The less the larger
 uniform float b_offset = 0.0; 
 
+vec2 Rect_Size = vec2( RectWH*0.01, RectWH*0.01 );
+
+P_COLOR vec3 color = vec3(.1, .5, .3);
+
+
 // -----------------------------------------------
+
+P_COLOR vec4 COLOR;
+  P_DEFAULT float TIME = CoronaTotalTime * Speed;
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-    P_COLOR vec4 COLOR;
-    P_DEFAULT float TIME = CoronaTotalTime;
+    
     //P_DEFAULT float alpha = abs(sin(CoronaTotalTime));
-    P_DEFAULT float dt = abs(sin(CoronaTotalTime));
+    P_DEFAULT float dt = abs(sin( TIME ));
     //----------------------------------------------
 
     vec2 uv = UV - vec2(.5);
     vec2 cloest_rect_point; 
     cloest_rect_point = uv; 
-    cloest_rect_point.x = clamp(uv.x, -rect_size.x, rect_size.x);  
-    cloest_rect_point.y = clamp(uv.y, -rect_size.y, rect_size.y);   
+    cloest_rect_point.x = clamp(uv.x, -Rect_Size.x, Rect_Size.x);  
+    cloest_rect_point.y = clamp(uv.y, -Rect_Size.y, Rect_Size.y);   
     vec2 cuv = uv - cloest_rect_point;
     float d2c = length(cuv);
-    //COLOR.a = - log(d2c*fall_off_scale + b_offset) * bness; 
-    COLOR.a = - log(d2c*fall_off_scale + b_offset) * bness * dt ; 
-    //COLOR.a = - log(d2c*fall_off_scale* dt + b_offset) * bness  ; 
+    //COLOR.a = - log(d2c*Scale_FallOff + b_offset) * Brightness; 
+    COLOR.a = - log(d2c*Scale_FallOff + b_offset) * Brightness * dt ; 
+    //COLOR.a = - log(d2c*Scale_FallOff* dt + b_offset) * Brightness  ; 
     //COLOR.rgb = color;
-    COLOR.rgb = color * min(COLOR.a, max_glow);
-    //COLOR.rgb = color * ( 1/  min(COLOR.a, max_glow) );
+    COLOR.rgb = color * min(COLOR.a, Glow_Max);
+    //COLOR.rgb = color * ( 1/  min(COLOR.a, Glow_Max) );
     //----------------------------------------------
 
 
@@ -87,9 +80,6 @@ return kernel
 
 --[[
     
-    void fragment() {
-    
-    }
 --]]
 
 

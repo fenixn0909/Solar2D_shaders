@@ -37,7 +37,6 @@ float Brightness = CoronaVertexUserData.z;
 float Scale = CoronaVertexUserData.w;
 
 //----------------------------------------------
-//----------------------------------------------
 
 #ifdef GL_ES
 precision mediump float;

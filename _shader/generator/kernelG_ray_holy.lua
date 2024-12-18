@@ -64,8 +64,8 @@ P_DEFAULT float angle = -0.3;
 P_DEFAULT float position = -0.2;
 P_DEFAULT float spread = 0.5; // hint_range(0.0, 1.0)
 P_DEFAULT float cutoff = 0.1; //  hint_range(-1.0, 1.0)
-P_DEFAULT float falloff = 0.2; // hint_range(0.0, 1.0)
-P_DEFAULT float edge_fade = 0.15; // hint_range(0.0, 1.0)
+P_DEFAULT float falloff = .2; // hint_range(0.0, 1.0)
+P_DEFAULT float edge_fade = .15; // hint_range(0.0, 1.0)
 
 P_DEFAULT float speed = 1.0;
 P_DEFAULT float ray1_density = 8.0;
@@ -77,6 +77,7 @@ P_COLOR vec4 color = vec4(1.0, 0.9, 0.65, 0.8); // : hint_color
 P_DEFAULT float seed = 5.0;
 P_DEFAULT bool hdr = false;
 
+//----------------------------------------------
 P_RANDOM float random( P_UV vec2 _uv) {
     return fract(sin(dot(_uv.xy,
             vec2(12.9898, 78.233))) * 43758.5453123);                       
@@ -113,6 +114,7 @@ P_DEFAULT vec4 screen( P_DEFAULT vec4 base, P_DEFAULT vec4 blend){
   return 1.0 - (1.0 - base) * (1.0 - blend);
 }
 
+//----------------------------------------------
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {

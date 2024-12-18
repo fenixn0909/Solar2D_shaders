@@ -4,10 +4,8 @@
     kcfresh53
     September 26, 2023
 
-    ✳️ Need check on device!! issue: gl_FragCoord ✳️
 
 --]]
-
 
 
 local kernel = {}
@@ -20,56 +18,44 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "scrnPxW",
-    default = 600,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "scrnPxH",
-    default = 2000,
-    min = 1,
-    max = 9999,     
-    index = 1,    -- v_UserData.y
-  },
-}
-
+  { name = "Speed",     default = 2, min = -15, max = 15, index = 0, },
+  { name = "Rot",       default = 45, min = 0, max = 360, index = 1, },
+  { name = "DistR",     default = .1, min = -2, max = 4, index = 2, },
+  { name = "EdgeR",   default = 2, min = 1, max = 10, index = 3, },
+} 
 
 kernel.fragment =
 [[
 
-
-float scrnPxW = CoronaVertexUserData.x;
-float scrnPxH = CoronaVertexUserData.y;
-
-const float tweak = 1;
-P_UV vec2 SCREEN_PIXEL_SIZE = tweak/vec2( scrnPxW, scrnPxH );
+float Speed = CoronaVertexUserData.x;
+float Rot = CoronaVertexUserData.y;
+float DistR = CoronaVertexUserData.z;
+float EdgeR = CoronaVertexUserData.w;
 
 //----------------------------------------------
 
+P_COLOR vec4 Col_1 = vec4(1.0, 1.0, 1.0, 1.0);
+P_COLOR vec4 Col_2 = vec4(.5, 0.75, 1.0, 1.0);
+
 //----------------------------------------------
 
+float TIME = CoronaTotalTime * Speed;
+vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
 P_COLOR vec4 COLOR;
-P_DEFAULT float TIME = CoronaTotalTime; // * speed
-
-
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-
-    vec4 FRAGCOORD = gl_FragCoord;
+    vec2 FRAGCOORD = UV * iResolution;
 
     //----------------------------------------------
-
     float aspect = (1.0 / SCREEN_PIXEL_SIZE).y / (1.0 / SCREEN_PIXEL_SIZE).x;
     float value;
 
     vec2 uv = FRAGCOORD.xy / (1.0 / SCREEN_PIXEL_SIZE).x;
     uv -= vec2(0.5, 0.5 * aspect);
 
-    float rot = radians(45.0);
+    float rot = radians( Rot );
     float s = sin(rot);
     float c = cos(rot);
 
@@ -92,15 +78,15 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
     value = fract(dist * 2.0);
     value = mix(value, 1.0 - value, step(1.0, edge));
-    edge = pow(abs(1.0 - edge), 2.0);
+    edge = pow(abs(1.0 - edge), EdgeR);
     value = smoothstep(edge - 0.05, edge, 0.95 * value);
-    value += squareDist * 0.1;
+    value += squareDist * DistR;
 
-    COLOR = mix(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.5, 0.75, 1.0, 1.0), value);
+    //COLOR = mix(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.5, 0.75, 1.0, 1.0), value);
+    COLOR = mix( Col_1, Col_2, value );
     COLOR.a = 0.25 * clamp(value, 0.0, 1.0);
 
     //----------------------------------------------
-
 
     return CoronaColorScale( COLOR );
 }
