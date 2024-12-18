@@ -1,10 +1,13 @@
 
 --[[
-  Origin Author: snesmocha
-  https://godotshaders.com/author/snesmocha/
-  
-  tutorial followed from here:
-  https://www.youtube.com/watch?v=BZp8DwPdj4s
+    Origin Author: snesmocha
+    https://godotshaders.com/author/snesmocha/
+
+    tutorial followed from here:
+    https://www.youtube.com/watch?v=BZp8DwPdj4s
+
+
+    Find and go #VARIATION and tweak them for different patterns
 
 --]]
 
@@ -19,44 +22,28 @@ kernel.name = "kaleidoScope"
 
 kernel.isTimeDependent = true
 
--- Expose effect parameters using vertex data
-kernel.vertexData   = {
-  {
-    name = "intensity",
-    default = 0.65, 
-    min = 0,
-    max = 1,
-    index = 0,  -- This corresponds to "CoronaVertexUserData.x"
-  },
-  {
-    name = "size",
-    default = 0.1, 
-    min = 0,
-    max = 1,
-    index = 1,  -- This corresponds to "CoronaVertexUserData.y"
-  },
-  {
-    name = "tilt",
-    default = 0.2, 
-    min = 0.0,
-    max = 2.0,
-    index = 2,  -- This corresponds to "CoronaVertexUserData.z"
-  },
-  {
-    name = "speed",
-    default = 1.0, 
-    min = 0.1,
-    max = 10.0,
-    index = 3,  -- This corresponds to "CoronaVertexUserData.w"
-  },
-}
+kernel.vertexData =
+{
+  { name = "Speed",                     default = 0.5, min = -5, max = 5, index = 0, },
+  { name = "IdealDist",                 default = 2, min = -10, max = 10, index = 1, },
+  { name = "Steps",   --[[#OVERHEAD!]]  default = 100, min = 50, max = 150, index = 2, },
+  { name = "Vivid",                     default = 10, min = 0, max = 15, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
-float IdealDist = 100.0;
+float Speed = CoronaVertexUserData.x;
+float IdealDist = CoronaVertexUserData.y; 
+float Steps = CoronaVertexUserData.z;
+float Vivid = CoronaVertexUserData.w;
 
+//----------------------------------------------
+
+P_COLOR vec4 Col_Tint = vec4( 1.0, .7, .2, 1.0);
+
+//----------------------------------------------
 mat2 rot(float a) {
     float c = cos(a);
     float s = sin(a);
@@ -98,43 +85,60 @@ float map(vec3 p, vec3 cPos, float time) {
 }
 
 
+//----------------------------------------------
 
+float TIME = CoronaTotalTime;
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
-  vec2 p = texCoord;
-  float TIME = CoronaTotalTime;
+    //float ideal_dist = IdealDist*100;
+    int steps = int( Steps );
 
-  vec3 cPos = vec3(0.0,0.0, -3.0 * TIME);
-  // vec3 cPos = vec3(0.3*sin(TIME*0.8), 0.4*cos(TIME*0.3), -6.0 * TIME);
-  vec3 cDir = normalize(vec3(0.0, 0.0, -1.0));
-  vec3 cUp  = vec3(sin(TIME), 1.0, 0.0);
-  vec3 cSide = cross(cDir, cUp);
+    //----------------------------------------------
+    vec2 p = UV;
 
-  vec3 ray = normalize(cSide * (p.x - 0.5) + cUp * (p.y - 0.5) + cDir);
+    vec3 cPos = vec3(0.0, 0.0, -3.0 * TIME * Speed);
+    // vec3 cPos = vec3(0.3*sin(TIME*0.8), 0.4*cos(TIME*0.3), -6.0 * TIME);
+    vec3 cDir = normalize(vec3(0.0, 0.0, -1.0));
+    vec3 cUp  = vec3(sin( TIME * Speed ), 1.0, 0.0);
+    vec3 cSide = cross(cDir, cUp);
 
-  // Phantom Mode https://www.shadertoy.com/view/MtScWW by aiekick
-  float acc = 0.0;
-  float acc2 = 0.0;
-  float t = 0.0;
-  for (int i = 0; i < 99; i++) {
+    vec3 ray = normalize(cSide * (p.x - 0.5) + cUp * (p.y - 0.5) + cDir);
+
+    // Phantom Mode https://www.shadertoy.com/view/MtScWW by aiekick
+    float acc = 0.0;
+    float acc2 = 0.0;
+    float t = 0.0;
+    for (int i = 0; i < steps; i++) {
       vec3 pos = cPos + ray * t;
-      float dist = map(pos * (IdealDist / 100.0), cPos, TIME);
+      float dist = map(pos * (IdealDist), cPos, TIME* Speed);
       dist = max(abs(dist), 0.02);
       float a = exp(-dist*3.0);
-      if (mod(length(pos)+24.0*TIME, 30.0) < 3.0) {
+      if (mod(length(pos)+24.0*TIME* Speed, 30.0) < 3.0) {
           a *= 2.0;
           acc2 += a;
       }
       acc += a;
       t += dist * 0.5;
-  }
+    }
 
-  vec3 col = vec3(acc * 0.01, acc * 0.011 + acc2*0.002, acc * 0.012+ acc2*0.005);
-  vec4 COLOR = vec4(col, 1.0 - t * 0.03);
+    // Plain Color          #VARIATION
+    //vec3 col = vec3(acc * 0.01, acc * 0.011 + acc2*0.002, acc * 0.012+ acc2*0.005);
     
-  return CoronaColorScale( COLOR );
+    // Tween Color by UV    #VARIATION
+    vec3 col = vec3(acc * 0.01 * UV.x, acc * 0.011 * UV.y + acc2*0.002 , acc * 0.012+ acc2*0.005 * (UV.x + UV.y) );
+    col *= abs(sin(TIME)) + .75;
+    
+
+    vec4 COLOR = vec4( col, 1.0 - t * 0.03);
+    COLOR.rgb *= Vivid * .1;
+
+    //----------------------------------------------
+    // Tint Color  #VARIATION
+    COLOR *= Col_Tint;
+
+    return CoronaColorScale( COLOR );
 }
 
 ]]
@@ -144,38 +148,6 @@ return kernel
 
 --[[
 
-
-void fragment(){
-    vec2 p = UV;
-
-    vec3 cPos = vec3(0.0,0.0, -3.0 * TIME);
-    // vec3 cPos = vec3(0.3*sin(TIME*0.8), 0.4*cos(TIME*0.3), -6.0 * TIME);
-    vec3 cDir = normalize(vec3(0.0, 0.0, -1.0));
-    vec3 cUp  = vec3(sin(TIME), 1.0, 0.0);
-    vec3 cSide = cross(cDir, cUp);
-
-    vec3 ray = normalize(cSide * (p.x - 0.5) + cUp * (p.y - 0.5) + cDir);
-
-    // Phantom Mode https://www.shadertoy.com/view/MtScWW by aiekick
-    float acc = 0.0;
-    float acc2 = 0.0;
-    float t = 0.0;
-    for (int i = 0; i < 99; i++) {
-        vec3 pos = cPos + ray * t;
-        float dist = map(pos * (IdealDist / 100.0), cPos, TIME);
-        dist = max(abs(dist), 0.02);
-        float a = exp(-dist*3.0);
-        if (mod(length(pos)+24.0*TIME, 30.0) < 3.0) {
-            a *= 2.0;
-            acc2 += a;
-        }
-        acc += a;
-        t += dist * 0.5;
-    }
-
-    vec3 col = vec3(acc * 0.01, acc * 0.011 + acc2*0.002, acc * 0.012+ acc2*0.005);
-    COLOR = vec4(col, 1.0 - t * 0.03);
-}
 
 --]]
 

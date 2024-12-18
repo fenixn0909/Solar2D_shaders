@@ -17,7 +17,7 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  { name = "OutRad",     default = -2.5, min = 0, max = 5, index = 0, },
+  { name = "OutRad",     default = 1.25, min = 0, max = 5, index = 0, },
   { name = "Alpha",      default = 0.5, min = 0, max = 2, index = 1, },
 } 
 

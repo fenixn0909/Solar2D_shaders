@@ -17,38 +17,34 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "textureRatio",
-    default = 1,
-    min = 0,
-    max = 9999,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  {
-    name = "paletteRowCols",
-    default = 4,
-    min = 1,
-    max = 16,     -- 16x16->256
-    index = 1,    -- v_UserData.y
-  },
-}
-
+  { name = "BeamNum",     default = 3, min = 0, max = 30, index = 0, },
+  { name = "Noise",        default = 1, min = -10, max = 10, index = 1, },
+  { name = "Energy",      default = 12, min = -25, max = 150, index = 2, },
+  { name = "Frequency",      default = 12, min = 0, max = 75, index = 3, },
+} 
 
 kernel.fragment =
 [[
 
+float BeamNum = CoronaVertexUserData.x;
+float Noise = CoronaVertexUserData.y;
+float Energy = CoronaVertexUserData.z;
+float Frequency = CoronaVertexUserData.w;
+
 //----------------------------------------------
 
-uniform int beams = 2; // How many beams the energy field should have
+int Beams = int(BeamNum); // How many beams the energy field should have
 
-uniform float energy = 3.0; // How much the beams will travel up and down
+//uniform float Energy = 3.0; // How much the beams will travel up and down
 uniform int roughness = 3; // : hint_range(1, 10) How compact the noise texture will be
-uniform int frequency = 10; // Amount of "ripples" in the beams
+//uniform int Frequency = 10; // Amount of "ripples" in the beams
+vec2 NoiseUV = vec2( Noise ); // If the object (for example the ColorRect or Sprite node) is compressed use this to compensate for the noise texture being compressed.
+
 
 uniform float speed = 1.0; // Animation speed
-uniform float thickness = 0.006; // : hint_range(0.0, 0.1) Thickness of the main beam
+uniform float thickness = .006; // : hint_range(0.0, 0.1) Thickness of the main beam
 uniform float outline_thickness = 0.03; // : hint_range(0.0, 0.1) Thickness of the outline color
-uniform float beam_difference = 0.0; // : hint_range(0.0, 1.0)The thickness difference between the main beam and the other, if there are more than one beam. The closer to 1 the smaller the thickness difference.
+uniform float beam_difference = .0; // : hint_range(0.0, 1.0)The thickness difference between the main beam and the other, if there are more than one beam. The closer to 1 the smaller the thickness difference.
 
 uniform float glow = 0.0; // : hint_range(0.0, 3.0) Use together with WorldEnvironment's Glow feature
 uniform float outline_glow = 0.0; // : hint_range(0.0, 3.0)
@@ -60,7 +56,6 @@ uniform float progress = 1.0; // : hint_range(0.0, 1.0)
 
 uniform float y_offset = 0.0; //  : hint_range (-0.5, 0.5)  Position of the beam
 uniform float fixed_edge_size = 0.05; //  : hint_range(0.0, 0.5)  How close to the edge should the beam be still before the animatino starts
-uniform vec2 noise_scale = vec2(1.0); // If the object (for example the ColorRect or Sprite node) is compressed use this to compensate for the noise texture being compressed.
 
 //----------------------------------------------
 
@@ -96,8 +91,8 @@ float noise(vec2 uv) {
 
 float fbm(vec2 uv, float time) {
     int octaves = roughness;
-    float amp = 0.01 * energy * progress;
-    float freq = float(frequency);
+    float amp = 0.01 * Energy * progress;
+    float freq = float(Frequency);
   float value = 0.0;
   
     for(int i = 0; i < octaves; i++) {
@@ -118,11 +113,11 @@ vec4 bolt(vec2 uv, float time, float i)
   float falloff = smoothstep(0.0, fixed_edge_size, uv.x) * smoothstep(0.0, fixed_edge_size, 1.0 - uv.x);
   
   // Use Fractal Brownian Motion to create a "cloud texture" and use Difference blend mode to make the beam
-  vec4 clouds = vec4(fbm((uv + vec2(i) ) * noise_scale, time * speed)) * falloff;
-  vec4 diff_clouds = difference(clouds, vec4(uv.y - 0.5 + y_offset + (uv.y * falloff * 0.02 * energy * progress)));
+  vec4 clouds = vec4(fbm((uv + vec2(i) ) * NoiseUV, time * speed)) * falloff;
+  vec4 diff_clouds = difference(clouds, vec4(uv.y - 0.5 + y_offset + (uv.y * falloff * 0.02 * Energy * progress)));
   
   // Create a new noise to mask the beams on low "progress" values. To make a "turn-off" effect more visually interesting.
-  vec4 clouds2 = vec4(fbm((uv * 2.0) * noise_scale, time * 1.)) * 5.0;
+  vec4 clouds2 = vec4(fbm((uv * 2.0) * NoiseUV, time * 1.)) * 5.0;
   diff_clouds += smoothstep(0.0, 0.8, clouds2) * 0.1 * (1.-progress);
   
   // Set thickness of the beams. First beam is the Thickness size and all following beams are sized with beam_difference
@@ -150,7 +145,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
   vec4 beam = vec4(0.0);
   
-  for (int i = 0; i < beams; i++){
+  for (int i = 0; i < Beams; i++){
     beam = max(beam, bolt(UV, TIME, float(i)));
   }
   

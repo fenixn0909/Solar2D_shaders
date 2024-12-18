@@ -18,13 +18,15 @@ kernel.category = "generator"
 kernel.group = "BG" 
 kernel.name = "colorNoise"
 
+kernel.isTimeDependent = true
+
 
 kernel.vertexData =
 {
   { name = "Speed",     default = 1.2, min = -5, max = 5, index = 0, },
-  { name = "Zoom",   default = 12, min = -20, max = 20, index = 1, },
+  { name = "Zoom",      default = 12, min = -20, max = 20, index = 1, },
   { name = "Cell",      default = 5, min = -20, max = 200, index = 2, },
-  { name = "Pan",      default = 0.5, min = 0, max = 1, index = 3, },
+  { name = "Pan",       default = 0.5, min = 0, max = 1, index = 3, },
 } 
 
 kernel.fragment =
