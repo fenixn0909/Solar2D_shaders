@@ -26,10 +26,10 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  { name = "Speed",           default = 0.05, min = 0, max = 2, index = 0, },
-  { name = "Rotate_Speed",    default = 1.1, min = 0, max = 36, index = 1, },
-  { name = "Line_Width",      default = 0.1, min = 0, max = 1, index = 2, },
-  { name = "Zoom",       default = 0.1, min = 0, max = 8, index = 3, },
+    { name = "Speed",           default = 0.05, min = 0, max = 2, index = 0, },
+    { name = "Rotate_Speed",    default = 1.1, min = 0, max = 36, index = 1, },
+    { name = "Line_Width",      default = 0.1, min = 0, max = 1, index = 2, },
+    { name = "Zoom",       default = 0.1, min = 0, max = 8, index = 3, },
 } 
 
 kernel.fragment =

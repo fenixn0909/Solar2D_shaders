@@ -22,36 +22,69 @@ kernel.name = "simpleSpiralsDemo"
 
 kernel.isTimeDependent = true
 
-kernel.vertexData =
+
+kernel.uniformData =
 {
-  { name = "Stretch",     default = 6.28, min = -20, max = 20, index = 0, },
-  { name = "Thickness",   default = .3, min = 0., max = 1, index = 1, },
-  { name = "Type",      default = 1, min = 1, max = 5, index = 2, },
-  { name = "Tiers",      default = 4, min = 0, max = 10, index = 3, },
-} 
+    -- index = 0, -- u_UserData0
+    -- type = "mat4",  -- vec4 x 4
+    -- type = "mat2",  -- vec2 x 2
+
+
+    {
+        index = 0, 
+        type = "mat4",  -- vec4 x 4
+        name = "colorMat4",
+        paramName = {
+            'Stretch','Thickness','Type','Tiers',
+            'Speed','Rays','Fade','none',
+            'Col_1_R','Col_1_G','Col_1_B','Col_1_A',
+            'Col_2_R','Col_2_G','Col_2_B','Col_2_A',
+        },
+        default = {
+            6.28, .3, 1, 4,
+            1.5, 6., .1, 0.,       
+            0.5, 1.5, 0.5, 0.0,      
+            1.0, 0.5, 0.5, 0.0,
+        },
+        min = {
+            -20., 0., 1., 0.,
+            -20., 0., 0., 0.,
+            0., 0., 0., 0.,
+            0., 0., 0., 0.,
+        },
+        max = {
+            20., 1., 5., 10.,
+            20., 20., 3., 0.,
+            2.0, 2.0, 2.0, 2.0,
+            2.0, 2.0, 2.0, 2.0,
+        },
+    },
+}
 
 kernel.fragment =
 [[
 
-float Stretch = CoronaVertexUserData.x;
-float Thickness = CoronaVertexUserData.y;
-float Type = CoronaVertexUserData.z;
-float Tiers = CoronaVertexUserData.w;
+uniform mat4 u_UserData0;
+//uniform mat4 u_UserData1;
+//----------------------------------------------
+float Stretch = u_UserData0[0].x;
+float Thickness = u_UserData0[0].y;
+float Type = u_UserData0[0].z;
+float Tiers = u_UserData0[0].w;
+
+float Speed = u_UserData0[1].x;
+float Rays = u_UserData0[1].y;
+float Fade = u_UserData0[1].z;
+
+//vec3 Col_1 = vec3( 0.5, 1.5, 0.5 );
+//vec3 Col_2 = vec3( 1.0, 0.5, 0.5 );
+
+vec3 Col_1 = u_UserData0[2].rgb;
+vec3 Col_2 = u_UserData0[3].rgb;
+
 //----------------------------------------------
 
 int I_Type = int(Type); //hint_range(1,5) = 1;
-uniform float Rays = 6; //hint_range(0.,20., 1) = 6;
-uniform float Speed = 1.5; //hint_range(0., 20., .01) = .5;
-uniform float Fade = .1; //hint_range(0., 3., .01) = .1;
-//uniform float Thickness  = .3; //hint_range(0., 1., .01) = .3;
-
-
-// not used by all sprials
-//uniform float tiers = 4; //hint_range(0., 20., 1) = 4;
-//uniform float Stretch = 6.28; //hint_range(0., 10., .1) = 6.28;
-
-uniform vec3 color = vec3( 0.0, 1.0, 0.0 );
-uniform vec3 s5color2 = vec3( 1.0, 0.0, 0.0 );
 
 const float PI = 3.14159265359;
 const float TAU =  6.283185307179586;
@@ -73,7 +106,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
     float r = length(.5 - UV);
     float angle = atan(UV.y-.5, UV.x-.5);
-    COLOR.rgb = color;
+    COLOR.rgb = Col_1;
     
     if (I_Type == 1)
         COLOR.a = 1. - smoothstep(-.1, .1, fract((2.*r-(angle+PI)/TAU)*Rays + 
@@ -85,7 +118,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     if (I_Type == 4)
         COLOR.a *= 1. - smoothstep(0.0, Thickness, abs(fract(Tiers*(2.*r))/Tiers - mod(Tiers*(angle+PI)- 1 *TIME,TAU)/(Stretch*Tiers)) );
     if (I_Type == 5)
-        COLOR.rgb = mix(color, s5color2, Thickness*fract((2.*r-(angle+PI)/TAU)*Rays + 
+        COLOR.rgb = mix(Col_1, Col_2, Thickness*fract((2.*r-(angle+PI)/TAU)*Rays + 
                                         1 * TIME) );
     
     COLOR.a *= pow(2.*(.5 - r), Fade*4.);

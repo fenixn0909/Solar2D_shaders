@@ -174,12 +174,14 @@ M.bank_print_dbInfo = function( )
     local _d = m.get_cur_data()
     print('category: '.. _d.category) print('group: '.. _d.group) print('name: '.. _d.name)
 end
-M.bank_get_info = function( ind_ ) return  m.get_cur_data()    end
-M.bank_get_dVertext = function( ind_ )
-    if not  m.get_cur_data().vertexData then print('No VertexData Found!') return {} end
-return  m.get_cur_data().vertexData    end
+M.bank_get_data = function( ind_ ) return  m.get_cur_data()    end
 M.bank_get_kernal = function( ind_ ) return m.get_kernal_path( m.get_cur_data()  )    end
 M.bank_get_fileName = function( ind_ ) return maaList[miUN_cur][ind_ or miBF_cur]    end
+M.bank_get_dVertex = function( ind_ )    if not  m.get_cur_data().vertexData then print('No VertexData Found!') return nil end
+return  m.get_cur_data().vertexData    end
+
+M.bank_get_dUniform = function( ind_ )    if not  m.get_cur_data().uniformData then print('No UniformData Found!') return nil end
+return  m.get_cur_data().uniformData    end
 
 m.get_kernal_path = function( d_ ) return d_.category.. '.' ..d_.group.. '.' ..d_.name    end
 

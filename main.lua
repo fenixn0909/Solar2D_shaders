@@ -3,6 +3,7 @@
     Solar2D ShaderBank
     
     NOTE -
+    ✳️ !! Using both vertexData and uniformData may cause issues !!
     ✳️ Noise Textures:   works only in Composite Mode.
     ✳️ Sprite Textures:  work as simply an imageRect in both Generator and Composite Mode.
     ✳️ You can apply specific shader for testing by calling "m.apply_specific_shader()", 
@@ -21,7 +22,9 @@
     n,m, ',' , '.' : tweak ParamSlider4
     You could change the keycode on "Input" section to fit your keyboard layout.
     
-
+    MOUSE SCROLLER -
+    ✳️ You can scroll the param page by mouse or trackpad.
+    
     RESOURCE - 
     ✳️ You could add your own image resources for testing by modifying the "mC_aaImgFN" table,
         keep the filename short to prevent mess up the layout.
@@ -47,12 +50,15 @@ local mC_pthG = "_shader/generator/"
 local mC_pthF = "_shader/filter/"
 local mC_pthT = "_shader/filter_trans/"
 local mC_pthC = "_shader/composite/"
+
+local mC_nParam = 32
 ----------------------------------------------------------------------------------------------------
 display.setStatusBar( display.HiddenStatusBar )
 display.setDefault( "textureWrapX", "repeat" )
 display.setDefault( "textureWrapY", "repeat" )
 ----------------------------------------------------------------------------------------------------
 local shdilr = require( "_plugin.shdilr" )
+local inspect = require( "_plugin.inspect" ) -- Debug
 local widget = require( "widget" )
 widget.setTheme( "widget_theme_android_holo_light" ) -- 'widget_theme_android_holo_dark', 'widget_theme_ios7'
 ----------------------------------------------------------------------------------------------------
@@ -60,6 +66,7 @@ local m_abs = math.abs
 local SCRN_DCX, SCRN_DCY = display.contentCenterX, display.contentCenterY
 local SCRN_DT,SCRN_DB,SCRN_DL,SCRN_DR = display.screenOriginY,display.contentHeight-display.screenOriginY,display.screenOriginX,display.contentWidth-display.screenOriginX
 local SCRN_DSOX,SCRN_DSOY = display.safeScreenOriginX,display.safeScreenOriginY; -- print("DSOX,DSOY = ",DSOX,DSOY) -- YX for Orientation Reason
+local SCRN_DDW,SCRN_DDH   = display.contentWidth-(display.screenOriginX*2),display.contentHeight-(display.screenOriginY*2);
 
 ----------------------------------------------------------------------------------------------------
 local toggle_visible = function( b_, ... ) for i=1,#arg do    arg[i].isVisible = b_ end end
@@ -73,6 +80,11 @@ local file_get_match_sub = function( sPth_, sPtrn_, sTrim_ ) --@strPath, @strPat
         if file:match( sPtrn_ ) then    _a[#_a+1] = file:gsub( sTrim_, "" )     end
     end
 return _a    end
+
+local function new_deep_copy( copy_ )    if( type(copy_) ~= "table" ) then  return copy_ end
+    local _paste = {}; for k,v in next, copy_ do    if( type(v) == "table" ) then    _paste[k] = new_deep_copy( v ) else    _paste[k] = v end end   
+return _paste    end
+
 ----------------------------------------------------------------------------------------------------
 --=== Image
 local mtiPage = { pgPrama= 1, pgTexture= 2, pgFile= 3 }
@@ -82,7 +94,7 @@ local maoImage = {} -- 1:Background, 2:Sprite, 3:Noise
 local maiImgCur = { 0, 0, 1 } -- Note for ERROR prevention: DON'T mess it up!   1:Background, 2:Sprite, 3:Noise
 
 --=== Shader Data
-local maShdrVD_cur      
+local maShdrData_cur      
 
 --=== Management
 local miCateCur = 1
@@ -92,28 +104,24 @@ local miSwitchCur = 1
 --=== UI
 local moSegCon
 local moPckrWhl
+local moScrView
 
-local mtoText = {}
+local mtoTextVD = {}
 local maoSlider = {}
 local maoSwitch = {}
 local maoButton = {}
-
 
 --=== Group
 local maoGrp = {}
 
 ----------------------------------------------------------------------------------------------------
-
 local M,m,mm,mtFn,mLstnr = {},{},{},{},{}
 ----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-
 ----------------------------------------------------------------------------------------------------
 -- Public
 ----------------------------------------------------------------------------------------------------
 
 M.startup = function()  -- Calls only once
-    
 
     local _aList
     _aList = file_get_match_sub( mC_pthG, '^%a.*', '.lua' )
@@ -126,7 +134,6 @@ M.startup = function()  -- Calls only once
     shdilr.load_list( mC_pthC:gsub('%/','%.'), _aList, 4 )
 
     Runtime:addEventListener( "key", mLstnr.onEvent_Key )
-
     
 end
 
@@ -149,12 +156,14 @@ M.init = function()
     moSegCon = m.new_segCon( maoGrp[0], mLstnr.segCon, mC_akCate ) -- Shader Category
 
     --=== Page: Param
-    m.init_param_text( maoGrp[1], mtoText )
-    m.init_slider( maoGrp[1], maoSlider, mLstnr.aVD_slider )
+    m.init_scrollerView_UF( maoGrp[1], mLstnr.scrView ) 
+    m.init_textParam_VD( moScrView, mtoTextVD )
+    m.init_slider_VD( moScrView, maoSlider, mLstnr.aVD_slider )  
+    
     --=== Page: Texture
-    moPckrWhl = m.initNew_wheel( maoGrp[2], mLstnr.pickerWheel )
+    moPckrWhl = m.initNew_wheel( maoGrp[2], mLstnr.pckrWhl )
     --=== Page: Filename, Shift Button
-    m.init_file_text( maoGrp[3], mtoText )
+    m.init_file_text( maoGrp[3], mtoTextVD )
     m.init_menu_button( maoGrp[3], maoButton, mLstnr.aFile_botton )
 
     --=== Hide Groups
@@ -165,6 +174,7 @@ M.init = function()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_electricHatch' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudMotion' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_starFall' )
     m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_vortexOverlay' )
@@ -196,36 +206,56 @@ m.init_file_text = function( grp_, toText_ )
     grp_:insert( toText_.kernal )
 end
 
---=== Param Text
-m.init_param_text = function( grp_, toText_ )
-    local _vDbY = SCRN_DB - 16
-    local _vDdY = -32
-    local _vDbX = SCRN_DL + 4
+--=== Param Text VertexData
+m.init_textParam_VD = function( grp_, toText_ )
+    
+    local _vDbY = 16
+    local _vDdY = 32
+    local _vDbX = 4
     local _vDdX = 120
 
     toText_.tVD_name = {}
     toText_.tVD_float = {}
 
-    for i=4,1,-1 do
-        toText_.tVD_name[i] =   display.newText{ align= 'left', x= _vDbX, y= _vDbY + _vDdY*m_abs(i-4),        fontSize= 16, text= 'name', font=  native.systemFont };  toText_.tVD_name[i].anchorX = 0
-        toText_.tVD_float[i] =  display.newText{ align= 'left', x= SCRN_DL+_vDdX, y= _vDbY + _vDdY*m_abs(i-4),  fontSize= 16, text= 'flaot', font=  native.systemFont };  toText_.tVD_float[i].anchorX = 0
+    for i=1,mC_nParam do
+        toText_.tVD_name[i]  =  display.newText{ align= 'left', x= _vDbX, y= _vDbY + _vDdY*(i-1),        fontSize= 16, text= 'name', font=  native.systemFont };  toText_.tVD_name[i].anchorX = 0
+        toText_.tVD_float[i] =  display.newText{ align= 'left', x= _vDbX+_vDdX, y= _vDbY + _vDdY*(i-1),  fontSize= 16, text= 'flaot', font=  native.systemFont };  toText_.tVD_float[i].anchorX = 0
         grp_:insert( toText_.tVD_name[i] )
         grp_:insert( toText_.tVD_float[i] )
     end
 end
 
---=== Slider
-m.init_slider = function( grp_, aoSlider_, aLstnr_ )
-    local _bX = SCRN_DR - 108
-    local _bY = SCRN_DB - 16
-    local _dY = -32
-    for i=4,1,-1 do
+--=== SliderVD: for VertexData
+m.init_slider_VD = function( grp_, aoSlider_, aLstnr_ )
+    
+    local _bX = 218 - SCRN_DL
+    local _bY = 16
+    local _dY = 32
+
+    for i=1,mC_nParam do
         aoSlider_[i] = widget.newSlider({
-            x= _bX, y= _bY+_dY*m_abs(i-4), width = 100, listener = aLstnr_[i],
+            x= _bX, y= _bY+_dY*(i-1), width = 100, listener = aLstnr_[i],
             value= 0,  -- Start slider at 10% (optional)
         })
         grp_:insert( aoSlider_[i] )
     end
+end
+
+--=== ScrollerView: Uniform
+m.init_scrollerView_UF = function( grp_, aLstnr_ )
+    -- Create a scrollView
+    moScrView = widget.newScrollView {
+        left= SCRN_DL,  top= SCRN_DB - 130,
+        width= SCRN_DDW-50, height= 130,
+        -- hideBackground= false,
+        hideBackground= true,
+        backgroundColor= { 128/255 },
+        --isBounceEnabled= false,
+        horizontalScrollDisabled= true,
+        verticalScrollDisabled= false,
+        listener= aLstnr_
+    }
+    grp_:insert( moScrView )
 end
 
 --=== Switch
@@ -313,10 +343,45 @@ m.apply_specific_shader = function( kC_, kN_ )  -- @keyCategory, @keyFileName
     m.apply_bank_shader()
 end
 
+mm.new_dUniform_mat4 = function( dO_ )  --@dOrigin
+    local _dC = new_deep_copy( dO_ )    -- dCopy
+    local _dN = { aName= {}, adToShdr= {}}                      -- dNew
+
+    local _d
+    for k=1,#_dC do
+        _dN.aName[k] = _dC[k].name
+        _dN.adToShdr[k] = {}
+        for i=1,16 do
+            _dN[#_dN+1] = {}; _d = _dN[#_dN]
+            _d.name = dO_[k].paramName[i]
+            _d.default = dO_[k].default[i]
+            _d.min = dO_[k].min[i]
+            _d.max = dO_[k].max[i]
+            _d.iMat4 = k
+            _d.iArr = i
+            
+            _dN.adToShdr[k][i] = _d.default
+        end
+    end
+    -- error("_dN: "..inspect( _dN ))
+
+return _dN    end
+
 m.apply_bank_shader = function()
-    maShdrVD_cur = shdilr.bank_get_dVertext() or {}
+
+    if shdilr.bank_get_dUniform() and shdilr.bank_get_dVertex() then error("Do not use both VertexData and UniformData") end
+
+    if shdilr.bank_get_dUniform() then
+        maShdrData_cur = mm.new_dUniform_mat4( shdilr.bank_get_dUniform() )
+        maShdrData_cur.dataType = 'TypD_Uniform'
+    else 
+        maShdrData_cur = shdilr.bank_get_dVertex() or {}
+        maShdrData_cur.dataType = 'TypD_Vertex'
+    end
+
+
     --=== Apply Text
-    m.upd_text( maShdrVD_cur, mtoText )
+    m.upd_UI( maShdrData_cur, mtoTextVD )
     --=== Apply Shader
     mm.set_composite_fill()
     shdilr:bank_apply( maoImage[2], {} )
@@ -334,19 +399,21 @@ end
 -- Update
 ----------------------------------------------------------------------------------------------------
 
-m.upd_text = function( d_, toText_ )
+m.upd_UI = function( d_, toText_ )
 
     local _aVD = d_
     toText_.kernal.text = shdilr.bank_get_kernal()
     toText_.filename.text = shdilr.bank_get_fileName()
 
-    for i=1,4 do
+    --=== VertexData Texts & Sliders Visible
+    for i=1,mC_nParam do
         toggle_visible( false, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
         if _aVD[i] then 
             toText_.tVD_name[i].text = _aVD[i].name
             toText_.tVD_float[i].text = _aVD[i].default
             toggle_visible( true, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
-            mm.slider_value_to_percent( i, _aVD[i].default )
+            -- mm.slider_value_to_percent( i, _aVD[i].default )
+            mm.slider_value_to_percent( i, maShdrData_cur, _aVD[i].default )
         end
     end
 end
@@ -372,66 +439,7 @@ return true    end
 
 
 ----------------------------------------------------------------------------------------------------
--- Auxiliary
-----------------------------------------------------------------------------------------------------
-
-mm.slider_value_to_percent = function( i_, fV_ ) --@Index, @fValue
-    local _tVD = maShdrVD_cur[i_]
-    local _fTick = (_tVD.max - _tVD.min) / 100
-    local _percent = (fV_-_tVD.min) / _fTick
-    maoSlider[ i_ ]:setValue( _percent )
-end
-
-mm.slider_percent_to_value = function( i_, fV_ ) --@Index, @fPercentage
-    local _tVD = maShdrVD_cur[i_]   if not _tVD then     return end
-    local _fTick = (_tVD.max - _tVD.min) / 100
-    local _value = fV_ * _fTick + _tVD.min
-    mtoText.tVD_float[i_].text = _value
-    shdilr.sync_param( maoImage[2], { [_tVD.name]= _value } )
-end
-
-----------------------------------------------------------------------------------------------------
--- Listener
-----------------------------------------------------------------------------------------------------
-
-mLstnr.aVD_slider = {}
-for i=1,4 do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
-
-mLstnr.aPage_switch = {}
-for i=1,3 do    mLstnr.aPage_switch[i] = function( e_ ) mm.trig_switch(i)     end end -- print("e_.target.id: "..e_.target.id)
-
-mLstnr.aFile_botton = {}
-for i=1,2 do    mLstnr.aFile_botton[i] = function( e_ )
-    if ( "ended" == e_.phase ) then     -- or "cancelled" == e_.phase
-        if i==1 then mtFn.iptU['left']() end
-        if i==2 then mtFn.iptU['right']() end
-    end
-end end
-
-mLstnr.segCon = function( e_ )
-    local _nSN = e_.target.segmentNumber
-    if mkCateCur == mC_akCate[ _nSN ] then return    end
-    mkCateCur = mC_akCate[ _nSN ]
-    miCateCur = _nSN
-    -- print("mkCateCur: "..mkCateCur)
-
-    shdilr.bank_set_union( _nSN )
-    m.apply_bank_shader()
-end
-
-mLstnr.pickerWheel = function( e_ )   -- e_:{ column = 3, row = 21 }
-    local _iT, _iI = e_.column, e_.row     --@indImgType, @indImage
-    m.upd_img( _iT, _iI )
-end
-
-mLstnr.onEvent_Key = function( e_ )
-    if      (e_.phase == "up") then    if mtFn.iptU[ e_.keyName ] then     mtFn.iptU[ e_.keyName ]() end
-    elseif  (e_.phase == "down") then  if mtFn.iptD[ e_.keyName ] then     mtFn.iptD[ e_.keyName ]() end
-    end
-end
-
-----------------------------------------------------------------------------------------------------
--- Input
+-- Input Map
 ----------------------------------------------------------------------------------------------------
 
 mtFn.iptU, mtFn.iptD = {},{}
@@ -471,7 +479,9 @@ mtFn.iptD['m'] = function() mm.tweak_slider('-',4,1) end    --=== Decrease Param
 mtFn.iptD[','] = function() mm.tweak_slider('+',4,1) end    --=== Increase Param 4
 mtFn.iptD['.'] = function() mm.tweak_slider('+',4,B) end    --=== Increase Param 4 Boost
 
-
+----------------------------------------------------------------------------------------------------
+-- Input Action
+----------------------------------------------------------------------------------------------------
 mm.go_mode = function( i_ )
     moSegCon:setActiveSegment(i_)
     mLstnr.segCon{target={segmentNumber= i_}}--  {target={segmentNumber= i_}} e_.target.segmentNumber
@@ -486,8 +496,8 @@ mm.swap_menu = function( k_ )    local _iNew    assert( (k_=='+' or k_=='-'), "i
     mm.trig_switch(_iNew)
 end
 mm.trig_switch = function( i_ )
-    toggle_visible( false, maoGrp[1], maoGrp[2], maoGrp[3], mtoText.filename, mtoText.kernal);    maoGrp[i_].isVisible = true
-    if i_ == mtiPage['pgFile'] then toggle_visible(true, mtoText.filename, mtoText.kernal) end
+    toggle_visible( false, maoGrp[1], maoGrp[2], maoGrp[3], mtoTextVD.filename, mtoTextVD.kernal);    maoGrp[i_].isVisible = true
+    if i_ == mtiPage['pgFile'] then toggle_visible(true, mtoTextVD.filename, mtoTextVD.kernal) end
     miSwitchCur = i_;    maoSwitch[i_]:setState({ isOn= true })
 end
 mm.swap_img = function( k_, i_ )    local _iNew     --@keyOpt, @indImgType
@@ -499,7 +509,115 @@ mm.tweak_slider = function( k_, i_, n_ )    assert( (k_=='+' or k_=='-'), "inval
     if k_ == '-' then _v = _v-n_    elseif k_ == '+' then _v = _v+n_    end
     _v = _v < 0 and 0 or _v;    _v = _v > 100 and 100 or _v     -- Clamp 0~100
     maoSlider[i_]:setValue( _v )
-    mm.slider_percent_to_value( i_, _v )
+    mm.slider_percent_to_value( i_, maShdrData_cur, _v )
+end
+
+----------------------------------------------------------------------------------------------------
+-- Auxiliary
+----------------------------------------------------------------------------------------------------
+
+mm.slider_value_to_percent = function( i_, d_, fV_ ) --@Index, @fValue
+    local _tVD = d_[i_]
+    local _fTick = (_tVD.max - _tVD.min) / 100
+    local _percent = (fV_-_tVD.min) / _fTick
+    maoSlider[ i_ ]:setValue( _percent )
+end
+
+mm.slider_percent_to_value = function( i_, d_, fV_ ) --@Index, @fPercentage
+    local _tVD = d_[i_]   if not _tVD then     return end
+    local _fTick = (_tVD.max - _tVD.min) / 100
+    local _value = fV_ * _fTick + _tVD.min
+    mtoTextVD.tVD_float[i_].text = _value
+    
+    if maShdrData_cur.dataType == 'TypD_Uniform' then  
+        d_.adToShdr[_tVD.iMat4][_tVD.iArr] = _value
+        shdilr.sync_param( maoImage[2], { [ d_.aName[_tVD.iMat4] ]= d_.adToShdr[_tVD.iMat4] } )
+    elseif maShdrData_cur.dataType == 'TypD_Vertex' then    
+        shdilr.sync_param( maoImage[2], { [_tVD.name]= _value } )
+    end
+    
+end
+
+----------------------------------------------------------------------------------------------------
+-- Listener
+----------------------------------------------------------------------------------------------------
+
+mLstnr.aVD_slider = {}
+for i=1,mC_nParam do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, maShdrData_cur, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
+
+mLstnr.aPage_switch = {}
+for i=1,3 do    mLstnr.aPage_switch[i] = function( e_ ) mm.trig_switch(i)     end end -- print("e_.target.id: "..e_.target.id)
+
+mLstnr.aFile_botton = {}
+for i=1,2 do    mLstnr.aFile_botton[i] = function( e_ )
+    if ( "ended" == e_.phase ) then     -- or "cancelled" == e_.phase
+        if i==1 then mtFn.iptU['left']() end
+        if i==2 then mtFn.iptU['right']() end
+    end
+end end
+
+mLstnr.segCon = function( e_ )
+    local _nSN = e_.target.segmentNumber
+    if mkCateCur == mC_akCate[ _nSN ] then return    end
+    mkCateCur = mC_akCate[ _nSN ]
+    miCateCur = _nSN
+    -- print("mkCateCur: "..mkCateCur)
+    shdilr.bank_set_union( _nSN )
+    m.apply_bank_shader()
+end
+
+mLstnr.pckrWhl = function( e_ )   -- e_:{ column = 3, row = 21 }
+    local _iT, _iI = e_.column, e_.row     --@indImgType, @indImage
+    m.upd_img( _iT, _iI )
+end
+
+mLstnr.scrView = function( e_ )
+    local phase = e_.phase
+    local direction = e_.direction
+
+    if "began" == phase then
+        -- print( "Began" )
+    elseif "moved" == phase then
+        -- print( "Moved" )
+    elseif "ended" == phase then
+        -- print( "Ended" )
+    end
+
+    -- If the scrollView has reached its scroll limit
+    if e_.limitReached then
+        if "up" == direction then
+            print( "Reached Top Limit" )
+        elseif "down" == direction then
+            print( "Reached Bottom Limit" )
+        elseif "left" == direction then
+            print( "Reached Left Limit" )
+        elseif "right" == direction then
+            print( "Reached Right Limit" )
+        end
+    end
+
+    return true
+end
+
+
+mLstnr.onEvent_Key = function( e_ )
+    if      (e_.phase == "up") then    if mtFn.iptU[ e_.keyName ] then     mtFn.iptU[ e_.keyName ]() end
+    elseif  (e_.phase == "down") then  if mtFn.iptD[ e_.keyName ] then     mtFn.iptD[ e_.keyName ]() end
+    end
+end
+
+----------------------------------------------------------------------------------------------------
+
+local function onMouseEvent( e_ )
+    if e_.type == "scroll" then
+
+        local _x, _y = moScrView:getContentPosition()
+        local _toY = _y - e_.scrollY * 5
+        if _toY > 0 then  _toY = 0    end
+        if _toY < -900 then   _toY = -900 end
+        moScrView:scrollToPosition{ time= 0, y= _toY }
+        
+    end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -508,7 +626,7 @@ end
 M.startup()
 M.init()
 
-
+Runtime:addEventListener( "mouse", onMouseEvent )
 
 ----------------------------------------------------------------------------------------------------
 

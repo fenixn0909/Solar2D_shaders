@@ -20,84 +20,104 @@ kernel.uniformData =
     -- index = 0, -- u_UserData0
     -- type = "mat4",  -- vec4 x 4
     -- type = "mat2",  -- vec2 x 2
+
+
     {
+        index = 0, 
+        type = "mat4",  -- vec4 x 4
         name = "colorMat4",
+        paramName = {
+            'Offset', 'Size', 'Speed', 'Lyr_Step',
+            'cloud_R','cloud_G','cloud_B','cloud_A',
+            'BG_R','BG_G','BG_B','BG_A',
+            'none','none','none','none',
+        },
         default = {
-            1.0, 1.0, 1.0, 1.0,         -- Cloud Color
-            0.18, 0.70, 0.87, 1.0,      -- backColor
-            0.0, 0.0, 0.0, 0.0,
+            1.5, 2.5, -3.5, .1,
+            1.0, 1.0, 1.0, 1.0,         -- Col_Cloud 
+            0.18, 0.70, 0.87, 1.0,      -- Col_Back
             0.0, 0.0, 0.0, 0.0,
         },
-        -- default = {1.5, 1.5, 1.5, 1.5},
         min = {
-            0.0, 0.0, 0.0, 0.0,
+            -10, -10, -10, 0.01,
             0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0,
         },
         max = {
-            1.0, 1.0, 1.0, 1.0,
+            10, 10, 10, .5,
             1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0,
         },
+    },
+    {
+        index = 1, 
         type = "mat4",  -- vec4 x 4
-        index = 0, 
+        name = "colorMat4_2",
+        paramName = {
+            'Offset', 'Size', 'Speed', 'Lyr_Step',
+            'cloud_R','cloud_G','cloud_B','cloud_A',
+            'BG_R','BG_G','BG_B','BG_A',
+            'none','none','none','none',
+        },
+        default = {
+            1.5, 2.5, -3.5, .1,
+            1.0, 1.0, 1.0, 1.0,         -- Col_Cloud 
+            0.8, 0.0, 0.7, 1.0,      -- Col_Back
+            0.0, 0.0, 0.0, 0.0,
+        },
+        min = {
+            -10, -10, -10, 0.01,
+            0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0,
+        },
+        max = {
+            10, 10, 10, .5,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0,
+        },
     },
 
-    {
-        name = "setting",   
-        -- offset, size, speed, lyr_step
-        default = {1.5, 2.5, -3.5, 0.1}, 
-        min = { -10, -10, -10, -10 },
-        max = { 10, 10, 10, 10 },
-        type = "vec4",
-        index = 1, -- u_UserData1
-    },
-    
+    -- {
+    --     type = "vec4",
+    --     name = "setting",   
+    --     -- Offset, Size, Speed, Lyr_Step
+    --     default = {1.5, 2.5, -3.5, 0.1}, 
+    --     min = { -10, -10, -10, -10 },
+    --     max = { 10, 10, 10, 10 },
+    --     index = 1, -- u_UserData1
+    -- },
 
 }
-
--- kernel.vertexData =
--- {
---   {
---     -- hint_range( 0.5, 1.5, 2) >1: Higher, <1: Reverse
---     name = "offset",    
---     default = 1.5,
---     min = -5,
---     max = 5,
---     index = 0, 
---   },
--- }
 
 
 kernel.fragment =
 [[
 //----------------------------------------------
 
-
 uniform mat4 u_UserData0; // mat4A
-uniform vec4 u_UserData1; // setting
+uniform mat4 u_UserData1; // mat4A_2
 
-P_COLOR vec4 cloudColor = u_UserData0[0];
-P_COLOR vec4 backColor = u_UserData0[1];
+vec4 setting = u_UserData0[0];
+P_COLOR vec4 Col_Cloud = u_UserData0[1];
+P_COLOR vec4 Col_Back = u_UserData0[2];
 
-float offset = u_UserData1[0];      // : hint_range( -0.5, 1.5, 10) Reverse Cloud if the cal result is minus
-float size = u_UserData1[1];        // : hint_range( 0.1, 2.5, 10) Higher the smaller + slower
+float Offset = setting[0];      // : hint_range( -0.5, 1.5, 10) Reverse Cloud if the cal result is minus
+float Size = setting[1];        // : hint_range( 0.1, 2.5, 10) Higher the smaller + slower
+float Speed = setting[2];       // : hint_range(-0.5, 5.0)
+float Lyr_Step = setting[3];    // : hint_range( 0.05, 0.1) Lower the more
 
-float speed = u_UserData1[2];       // : hint_range(-0.5, 5.0)
-float lyr_step = u_UserData1[3];    // : hint_range( 0.05, 0.1) Lower the more
-
-
+//----------------------------------------------
 const float TAU = 6.28318530718;
-
 //----------------------------------------------
 
 float Func(float pX)
 {
     return 0.6*(0.5*sin(0.1*pX) + 0.5*sin(0.553*pX) + 0.7*sin(1.2*pX));
 }
-
 
 float FuncR(float pX)
 {
@@ -154,24 +174,25 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
     //----------------------------------------------
 
-    vec2 uv = size * (SCREEN_UV - UV * offset);
+    vec2 uv = Size * (SCREEN_UV - UV * Offset);
 
     // Render:
-    vec3 Color= backColor.rgb;
-    for( float J = 0.0; J <= 1.0; J += lyr_step )
+    vec3 Color = Col_Back.rgb;
+    for( float J = 0.0; J <= 1.0; J += Lyr_Step )
     {
         // Cloud Layer:
-        float Lt =  TIME * speed * (0.5  + 2.0 * J) * (1.0 + 0.1 * sin(226.0 * J)) + 17.0 * J;
+        float Lt =  TIME * Speed * (0.5  + 2.0 * J) * (1.0 + 0.1 * sin(226.0 * J)) + 17.0 * J;
         vec2 Lp = vec2(0.0, 0.3 + 1.5 * ( J - 0.5));
         float L = Layer(uv + Lp, Lt);
+        
         // Blur and color:
-        float Blur = 4.0 * (0.5 * abs(2.0 - 5.0 * J)) / (11.0 - 5.0 * J);
-        float V = mix( 0.0, 1.0, 1.0 - smoothstep( 0.0, 0.01 +0.2 * Blur, L ) );
-        //vec3 Lc=  mix(cloudColor.rgb, vec3(1.0), J);
-        vec3 Lc=  mix( backColor.rgb, cloudColor.rgb, J);
-        Color =mix( Color, Lc,  V );
+        float blur = 4.0 * (0.5 * abs(2.0 - 5.0 * J)) / (11.0 - 5.0 * J);
+        float V = mix( 0.0, 1.0, 1.0 - smoothstep( 0.0, 0.01 +0.2 * blur, L ) );
+        vec3 Lc =  mix( Col_Back.rgb, Col_Cloud.rgb, J);
+        Color = mix( Color, Lc,  V );
     }
-    COLOR = vec4(Color, cloudColor.a);
+    COLOR = vec4(Color, Col_Cloud.a);
+
     //----------------------------------------------
     //COLOR.rgb *= COLOR.a;
 
