@@ -27,9 +27,9 @@ kernel.isTimeDependent = true
 kernel.vertexData =
 {
   { name = "Speed",           default = 0.05, min = 0, max = 2, index = 0, },
-  { name = "Rotate_Speed",    default = 1.1, min = -360, max = 360, index = 1, },
+  { name = "Rotate_Speed",    default = 1.1, min = 0, max = 36, index = 1, },
   { name = "Line_Width",      default = 0.1, min = 0, max = 1, index = 2, },
-  { name = "Line_Size",       default = 0.1, min = 0, max = 8, index = 3, },
+  { name = "Zoom",       default = 0.1, min = 0, max = 8, index = 3, },
 } 
 
 kernel.fragment =
@@ -38,7 +38,7 @@ kernel.fragment =
 float Speed = CoronaVertexUserData.x;
 float Rotate_Speed = CoronaVertexUserData.y;
 float Line_Width = CoronaVertexUserData.z;
-float Line_Size = CoronaVertexUserData.w;
+float Zoom = CoronaVertexUserData.w;
 //----------------------------------------------
 
 const float PI = 3.1415926535;
@@ -51,7 +51,7 @@ uniform vec4 line_color = vec4( 0.0, 1.0, 1.0, 1.0 ); //: hint_color
 float get_ratio_scan_line( float p )
 {
   return max(
-    -sin( mod( p, Line_Size ) / Line_Size * PI ) + Line_Width
+    -sin( mod( p, Zoom ) / Zoom * PI ) + Line_Width
   , 0.0
   ) / Line_Width;
 }

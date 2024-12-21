@@ -60,12 +60,16 @@ float when_eq(float x, float y) {
 
 //----------------------------------------------
 
+P_UV vec2 TEXTURE_PIXEL_SIZE = CoronaTexelSize.zw;
+P_UV vec2 iResolution = 1.0 / TEXTURE_PIXEL_SIZE;
+
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
+    P_UV vec2 FRAGCOORD = UV * iResolution;
+    
     P_COLOR vec4 COLOR = texture2D( CoronaSampler0, UV);
     //progress = abs(sin(CoronaTotalTime));
-    P_UV vec4 FRAGCOORD = gl_FragCoord;
-    P_UV vec2 TEXTURE_PIXEL_SIZE = CoronaTexelSize.zw;
 
     
 

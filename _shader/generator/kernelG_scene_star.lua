@@ -9,12 +9,11 @@
 --]]
 
 
-
 local kernel = {}
 
 kernel.language = "glsl"
 
-kernel.category = "filter"
+kernel.category = "generator"
 kernel.group = "scene"
 kernel.name = "star"
 
@@ -41,24 +40,24 @@ kernel.vertexData =
 
 kernel.fragment =
 [[
-uniform vec4 bg_color = vec4(0,0,0,1); //: hint_color;
+uniform vec4 Col_BG = vec4(0,0,0.2,1); //: hint_color;
 
+//----------------------------------------------
 float rand(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
 }
 
+//----------------------------------------------
+
+float TIME = CoronaTotalTime;
+P_COLOR vec4 COLOR = vec4(0);
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
     P_UV vec2 SCREEN_UV = texCoord;
     P_UV vec2 texelOffset = ( CoronaTexelSize.zw * 0.5 );
     P_UV vec2 FRAGCOORD = ( texelOffset + ( floor( texCoord / CoronaTexelSize.zw ) * CoronaTexelSize.zw ) );
-    //P_UV vec2 FRAGCOORD = vec2(0.5, 0.5);
-    //P_UV vec2 FRAGCOORD = texCoord;
-
-    float TIME = CoronaTotalTime;
-
-    P_COLOR vec4 COLOR;
+    //----------------------------------------------
 
     float size = 100.0;
     float prob = 0.9;
@@ -78,8 +77,8 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
         float r = rand(SCREEN_UV.xy);
         color = r * (0.85 * sin(TIME * (r * 5.0) + 720.0 * r) + 0.95);
     }
-    COLOR = vec4(vec3(color),1.0) + bg_color;
-     
+    COLOR = vec4(vec3(color),1.0) + Col_BG;
+    //----------------------------------------------
 
     return CoronaColorScale( COLOR );
 }

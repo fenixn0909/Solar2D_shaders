@@ -8,8 +8,6 @@
 
 --]]
 
-
-
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "filter"
@@ -21,19 +19,22 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  
-}
-
+  { name = "Speed",           default = 2, min = 0, max = 50, index = 0, },
+  { name = "Amount",        default = .5, min = 0, max = 6, index = 1, },
+  { name = "Rotation",      default = 1.25, min = 0, max = 5, index = 2, },
+} 
 
 kernel.fragment =
 [[
+
+float Speed = CoronaVertexUserData.x;
+float Amount = CoronaVertexUserData.y;
+float Rotation = CoronaVertexUserData.z;
+//----------------------------------------------
+
 P_UV vec2 iResolution = vec2(1. ,1.);
 
 //----------------------------------------------
-  const float amount = 0.1; // .2
-  const float rotationAmount = .1; // 0.1, too larger will cause nauseous 
-  const float speed = .05; // .1
-
 
   vec2 rotate2D(vec2 _uv, float _angle){
       _uv =  mat2(cos(_angle),-sin(_angle),
@@ -90,27 +91,25 @@ P_UV vec2 iResolution = vec2(1. ,1.);
 
 // -----------------------------------------------
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 COLOR = vec4(0);
+float iTime = CoronaTotalTime;
+
+
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_UV vec2 fragCoord = ( texCoord.xy / iResolution );
-  P_COLOR vec4 COLOR;
-  P_DEFAULT float iTime = CoronaTotalTime;
 
-  //----------------------------------------------
-    vec2 uv = fragCoord/iResolution.xy;
+    //----------------------------------------------
+    vec2 uv = UV/iResolution.xy;
     uv = uv*2.-1.;
-      vec3 p3 = vec3(0,0, iTime*speed)*8.0+8.0;
-      vec3 noise = vec3(simplex3d(p3),simplex3d(p3+10.),simplex3d(p3+20.));
-      uv = rotate2D(uv, noise.z*rotationAmount*.1);
+    vec3 p3 = vec3(0,0, iTime*Speed)*8.0+8.0;
+    vec3 noise = vec3(simplex3d(p3),simplex3d(p3+10.),simplex3d(p3+20.));
+    uv = rotate2D(uv, noise.z*Rotation*.1);
     uv = (uv+1.)/2.;
-    COLOR = vec4(texture2D( CoronaSampler0, uv+noise.xy*amount*0.1 ).rgb, 1.0);
+    COLOR = vec4(texture2D( CoronaSampler0, uv+noise.xy*Amount*0.1 ).rgb, 1.0);
 
-  //----------------------------------------------
-  //COLOR.a = (COLOR.a+COLOR.g+COLOR.b)/3;
-  //COLOR.a *= alpha;
-  //COLOR.rgb *= COLOR.a;
-  
-  return CoronaColorScale( COLOR );
+    //----------------------------------------------
+    
+    return CoronaColorScale( COLOR );
 }
 ]]
 

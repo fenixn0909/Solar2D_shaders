@@ -33,7 +33,7 @@ kernel.vertexData =
   },
   {
     name = "pixelSize",
-    default = 20,
+    default = 25,
     min = 5,
     max = 250,
     index = 1, 
@@ -57,21 +57,24 @@ float when_lt(float x, float y) { return max(sign(y - x), 0.0); }
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
-  P_UV vec4 FRAGCOORD = gl_FragCoord;
-  P_COLOR vec4 COLOR = Col_Plain;
-  //----------------------------------------------
-  
-  float xFraction = fract(FRAGCOORD.x / diamondPixelSize);
-  float yFraction = fract(FRAGCOORD.y / diamondPixelSize);
-  float xDistance = abs(xFraction - 0.5);
-  float yDistance = abs(yFraction - 0.5);
+    P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+    P_UV vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
+    P_UV vec2 FRAGCOORD = UV * iResolution;
 
-  COLOR.a *=  when_lt(xDistance + yDistance + UV.x + UV.y, progress * 4.0);
-  COLOR.rgb *= COLOR.a;
+    P_COLOR vec4 COLOR = Col_Plain;
+    //----------------------------------------------
 
-  //----------------------------------------------
+    float xFraction = fract(FRAGCOORD.x / diamondPixelSize);
+    float yFraction = fract(FRAGCOORD.y / diamondPixelSize);
+    float xDistance = abs(xFraction - 0.5);
+    float yDistance = abs(yFraction - 0.5);
 
-  return CoronaColorScale( COLOR );
+    COLOR.a *=  when_lt(xDistance + yDistance + UV.x + UV.y, progress * 4.0);
+    COLOR.rgb *= COLOR.a;
+
+    //----------------------------------------------
+
+    return CoronaColorScale( COLOR );
 }
 ]]
 

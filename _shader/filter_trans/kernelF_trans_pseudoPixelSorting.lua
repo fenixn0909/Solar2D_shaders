@@ -42,11 +42,14 @@ uniform float mask_threshold = .3;
 
 P_COLOR vec4 COLOR;
 vec4 FRAGCOORD = gl_FragCoord;
+
 P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+P_UV vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
 
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
+P_UV vec2 FRAGCOORD = UV * iResolution;
     
     
     //----------------------------------------------

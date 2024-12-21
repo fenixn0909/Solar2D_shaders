@@ -80,7 +80,7 @@ P_DEFAULT float TIME = CoronaTotalTime; // * speed
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
-    vec4 FRAGCOORD = gl_FragCoord;
+    vec2 FRAGCOORD = UV * CoronaTexelSize.zw;
     P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
 
 

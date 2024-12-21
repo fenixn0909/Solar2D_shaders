@@ -9,7 +9,7 @@ kernel.vertexData =
 {
   {
     name = "intensity",
-    default = 0,
+    default = 0.5,
     min = 0,
     max = 1,
     index = 0, -- v_UserData.x

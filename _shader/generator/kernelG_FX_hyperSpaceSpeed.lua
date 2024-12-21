@@ -37,13 +37,17 @@ bool enabled = true;
 //----------------------------------------------
 
 P_COLOR vec4 COLOR;
-P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
 P_DEFAULT float TIME = CoronaTotalTime * Speed; // * speed
+
+P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+P_UV vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-    //vec4 FRAGCOORD = gl_FragCoord; 
-    vec2 FRAGCOORD = UV ; 
+
+    P_UV vec2 FRAGCOORD = UV * iResolution;
+    
+    FRAGCOORD = UV ; 
     FRAGCOORD.x *= PanX;
     FRAGCOORD.y *= PanY;
 

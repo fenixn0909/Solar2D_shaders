@@ -2,27 +2,6 @@
 --[[
   Origin Author: orbbloff
   https://godotshaders.com/author/orbbloff/
-  
-
-  A Godot shader that magnifies what’s behind it. Written in Godot Engine v3.4.4.
-
-  This shader reads from screen texture. So if the image you want to zoom in isn’t rendered properly, you may end up with an unwanted result.
-
-  In order to get this shader working in Godot, you must attach this to a node with a texture. It might work with nodes without textures too, but it’s not tested yet.
-
-  For more information or to contribute: https://github.com/Orbbloff/Godot-Magnifier-Shader
-
-  https://orbbloff.itch.io/godot-magnifier-shader
-
-
-  This is a magnifier shader written in Godot Shading Language which is similar to GLSL ES 3.0. 
-  
-  In order to get this shader working, you must attach this to a node with a texture.
-  It might work with nodes without textures too, but isn't tested yet.
-  
-  Author is Yavuz Burak Yalçın @orbbloff
-  
-  MIT License
 
 --]]
 
@@ -32,7 +11,6 @@ local kernel = {}
 
 kernel.language = "glsl"
 kernel.category = "filter"
--- By default, the group is "custom"
 kernel.group = "scale"
 kernel.name = "magnifier"
 kernel.isTimeDependent = true
@@ -75,8 +53,13 @@ kernel.vertexData   = {
 kernel.vertex =
 [[
 
+
+
+//----------------------------------------------
 bool is_object_centered; // Note that this needs to match with the sprite's centered property
 
+
+//----------------------------------------------
 varying P_UV vec2 center_pos; //flat vec2
 varying P_UV vec2 frag_pos;
 
@@ -89,10 +72,8 @@ P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
       center_pos = vec2(0.0, 0.0); 
      }
   else{
-      //center_pos = (1.0 / TEXTURE_PIXEL_SIZE) / 2.0; 
       center_pos = (1.0 / CoronaTexelSize.zw) / 2.0; 
      }
-
   /*
   mat4 WORLD_MATRIX = mat4[
     0,0,0,0,
@@ -100,6 +81,7 @@ P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
     0,0,0,0,
     0,0,0,0
   ];
+
   */
   //center_pos = (gl_ModelViewMatrix * vec4(center_pos, 0.0, 1.0)).xy; // From local space texel coordinates 
   //center_pos = (gl_ModelViewMatrix * vec4(center_pos, 0.0, 1.0)).xy; // From local space texel coordinates 
@@ -113,10 +95,6 @@ P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
   return position;
 }
 ]]
-
-
-
-
 
 
 kernel.fragment =
@@ -136,11 +114,6 @@ varying P_UV vec2 frag_pos;
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
     vec2 SCREEN_PIXEL_SIZE = vec2(1.0,1.0);
-    //vec4 SCREEN_TEXTURE = CoronaSampler0;
-    //vec2 SCREEN_UV = vec2(1.0 ,1.0);
-    //vec2 SCREEN_UV = gl_FragCoord.xy / frag_pos;
-    //vec2 SCREEN_UV = frag_pos;
-    //vec2 SCREEN_UV = gl_FragCoord;
     vec2 SCREEN_UV = texCoord;
     vec2 UV = texCoord;
 

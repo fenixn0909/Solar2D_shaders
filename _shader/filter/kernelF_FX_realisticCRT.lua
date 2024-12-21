@@ -36,13 +36,13 @@ kernel.vertexData =
 }
 
 
+
 kernel.fragment =
 [[
 
 
 P_DEFAULT float resolutionX = CoronaVertexUserData.x;
 P_DEFAULT float resolutionY = CoronaVertexUserData.y;
-P_UV vec2 iResolution = vec2(resolutionX,resolutionY);
 //----------------------------------------------
 
 //uniform sampler2D SCREEN_TEXTURE: hint_screen_texture;
@@ -182,6 +182,9 @@ float roll_line(vec2 uv){
 
 // -----------------------------------------------
 
+P_UV vec2 TEXTURE_PIXEL_SIZE = CoronaTexelSize.zw;
+P_UV vec2 iResolution = 1.0 / TEXTURE_PIXEL_SIZE;
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
   //P_UV vec2 fragCoord = UV / iResolution;
@@ -190,7 +193,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
   P_DEFAULT float iTime = CoronaTotalTime;
   //P_DEFAULT float alpha = abs(sin(CoronaTotalTime)) -0.15;
   
-  vec4 FRAGCOORD = gl_FragCoord;
+  P_UV vec2 FRAGCOORD = UV * iResolution;
   vec2 SCREEN_UV = UV;
 
   //----------------------------------------------

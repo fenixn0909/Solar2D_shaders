@@ -164,10 +164,11 @@ M.init = function()
     m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stripes' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_electricHatch' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_starFall' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudSimple' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_PP_trippyWobble' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_vortexOverlay' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[3], 'kernelF_trans_rippleBurnOut' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_wobble_ripple' )
     

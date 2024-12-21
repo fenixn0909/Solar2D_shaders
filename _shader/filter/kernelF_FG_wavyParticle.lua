@@ -12,6 +12,9 @@ kernel.category = "filter"
 kernel.group = "FG"
 kernel.name = "wavyParticle"
 
+kernel.isTimeDependent = true
+
+
 kernel.vertexData   = {
   {
     name    = "r",

@@ -52,21 +52,15 @@ float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,96.233))) * 43758.5453);
 }
 //----------------------------------------------
+P_COLOR vec4 COLOR;
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_COLOR vec4 COLOR;
 
-  // Test
-  //Progress = CoronaTotalTime;
-
-  // FRAGCOORD Snippet
-  P_UV vec4 FRAGCOORD = gl_FragCoord;
-  P_UV vec2 SCREEN_PIXEL_SIZE = 1/ ScreenRate;
-
-  vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
+  P_UV vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
+  P_UV vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
+  P_UV vec2 FRAGCOORD = UV * iResolution;
   vec2 uv = FRAGCOORD.xy / iResolution.xy;
-
 
   float resolution = 5.0;
   vec2 lowresxy = vec2(
@@ -79,7 +73,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
   //COLOR.rgb *= Col_Fill.rgb;
   COLOR = Col_Fill;
   // Worked Rainbow Color
-  //COLOR = vec4(texCoord,0.5+0.5*sin(5.0 * FRAGCOORD.x),1.0); 
+  //COLOR = vec4(UV,0.5+0.5*sin(5.0 * FRAGCOORD.x),1.0); 
   }else{
   COLOR = vec4(0.0,0.0,0.0,0.0);
   // change to COLOR = vec4(0.0,0.0,0.0,1.0); to make black pixels
