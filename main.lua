@@ -175,8 +175,8 @@ M.init = function()
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_electricHatch' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudMotion' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_starFall' )
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_ray_holy' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_vortexOverlay' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[3], 'kernelF_trans_rippleBurnOut' )
@@ -343,42 +343,17 @@ m.apply_specific_shader = function( kC_, kN_ )  -- @keyCategory, @keyFileName
     m.apply_bank_shader()
 end
 
-mm.new_dUniform_mat4 = function( dO_ )  --@dOrigin
-    local _dC = new_deep_copy( dO_ )    -- dCopy
-    local _dN = { aName= {}, adToShdr= {}}                      -- dNew
-
-    local _d
-    for k=1,#_dC do
-        _dN.aName[k] = _dC[k].name
-        _dN.adToShdr[k] = {}
-        for i=1,16 do
-            _dN[#_dN+1] = {}; _d = _dN[#_dN]
-            _d.name = dO_[k].paramName[i]
-            _d.default = dO_[k].default[i]
-            _d.min = dO_[k].min[i]
-            _d.max = dO_[k].max[i]
-            _d.iMat4 = k
-            _d.iArr = i
-            
-            _dN.adToShdr[k][i] = _d.default
-        end
-    end
-    -- error("_dN: "..inspect( _dN ))
-
-return _dN    end
-
 m.apply_bank_shader = function()
 
     if shdilr.bank_get_dUniform() and shdilr.bank_get_dVertex() then error("Do not use both VertexData and UniformData") end
 
     if shdilr.bank_get_dUniform() then
-        maShdrData_cur = mm.new_dUniform_mat4( shdilr.bank_get_dUniform() )
+        maShdrData_cur = shdilr.new_dUniform_mat4()
         maShdrData_cur.dataType = 'TypD_Uniform'
     else 
         maShdrData_cur = shdilr.bank_get_dVertex() or {}
         maShdrData_cur.dataType = 'TypD_Vertex'
     end
-
 
     --=== Apply Text
     m.upd_UI( maShdrData_cur, mtoTextVD )
@@ -599,7 +574,6 @@ mLstnr.scrView = function( e_ )
     return true
 end
 
-
 mLstnr.onEvent_Key = function( e_ )
     if      (e_.phase == "up") then    if mtFn.iptU[ e_.keyName ] then     mtFn.iptU[ e_.keyName ]() end
     elseif  (e_.phase == "down") then  if mtFn.iptD[ e_.keyName ] then     mtFn.iptD[ e_.keyName ]() end
@@ -610,13 +584,11 @@ end
 
 local function onMouseEvent( e_ )
     if e_.type == "scroll" then
-
         local _x, _y = moScrView:getContentPosition()
         local _toY = _y - e_.scrollY * 5
         if _toY > 0 then  _toY = 0    end
         if _toY < -900 then   _toY = -900 end
         moScrView:scrollToPosition{ time= 0, y= _toY }
-        
     end
 end
 

@@ -15,8 +15,6 @@
 
 local a_val2ind = function( a_, k_ ) for i=1, #a_ do    if a_[i] == k_ then return i end   end end   --@Array Value to Index 
 ----------------------------------------------------------------------------------------------------
-
-
 local M,m,mtFn = {},{},{}
 ----------------------------------------------------------------------------------------------------
 
@@ -138,9 +136,7 @@ M.bank_set_union = function( i_ )
     miUN_cur = i_ 
     M.bank_reset()
 end
-
 M.bank_reset = function()    miBF_cur = 1 end
-
 M.bank_set_iBF = function( i_ )     assert( i_>0, "i_ must > 0")    assert( i_<= #maaList[ miUN_cur ], "i_ must <= #maaList[ miUN_cur ]")
     miBF_cur = i_
 end
@@ -183,6 +179,30 @@ return  m.get_cur_data().vertexData    end
 M.bank_get_dUniform = function( ind_ )    if not  m.get_cur_data().uniformData then print('No UniformData Found!') return nil end
 return  m.get_cur_data().uniformData    end
 
+M.new_dUniform_mat4 = function( dO_ )  --@dOrigin
+    local _dO = dO_ or M.bank_get_dUniform()
+    local _dN = { aName= {}, adToShdr= {}}                      -- dNew
+    
+    local _d
+    for k=1,#_dO do
+        _dN.aName[k] = _dO[k].name
+        _dN.adToShdr[k] = {}
+        for i=1,16 do
+            _dN[#_dN+1] = {}; _d = _dN[#_dN]
+            _d.name = _dO[k].paramName[i]
+            _d.default = _dO[k].default[i]
+            _d.min = _dO[k].min[i]
+            _d.max = _dO[k].max[i]
+            _d.iMat4 = k
+            _d.iArr = i
+            
+            _dN.adToShdr[k][i] = _d.default
+        end
+    end
+
+return _dN    end
+-------------------------------------------------------------------------------------------------
+
 m.get_kernal_path = function( d_ ) return d_.category.. '.' ..d_.group.. '.' ..d_.name    end
 
 m.get_cur_data = function(ind_)
@@ -196,7 +216,6 @@ m.extract_info = function( d_ )
 return _t    end
 
 -------------------------------------------------------------------------------------------------
-
 
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
