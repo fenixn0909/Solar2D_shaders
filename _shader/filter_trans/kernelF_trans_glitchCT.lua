@@ -26,8 +26,12 @@ kernel.category = "filter"
 kernel.group = "trans"
 kernel.name = "glitchCT"
 
---Test
--- kernel.isTimeDependent = true
+kernel.isTimeDependent = true
+
+
+-- kernel.textureWrap = "repeat"
+
+
 
 kernel.vertexData =
 {

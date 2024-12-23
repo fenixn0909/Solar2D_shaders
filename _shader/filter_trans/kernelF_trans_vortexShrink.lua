@@ -13,38 +13,25 @@ kernel.category = "filter"
 kernel.group = "trans"
 kernel.name = "vortexShrink"
 
---Test
--- kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "progress",
-    default = 1,
-    min = 0,
-    max = 1,
-    index = 0, 
-  },
-  {
-    name = "meltiness",
-    default = 1,
-    min = 0,
-    max = 1,
-    index = 1, 
-  },
+  { name = "Progress", default = .5, min = 0, max = 1, index = 0, },
+  { name = "Range", default = .7, min = 0, max = 5, index = 1, },
+  { name = "Strength", default = 15., min = 0, max = 100, index = 2, },
 }
 
 
 kernel.fragment =
 [[
-float progress = CoronaVertexUserData.x;
+float Progress = CoronaVertexUserData.x;
+float Range = CoronaVertexUserData.y;
+float Strength = CoronaVertexUserData.z;
+
 //----------------------------------------------
 
-uniform float Range = .7;
-uniform float Speed  = .35;
-uniform float Strength = 16.;
-
 uniform sampler2D iChannel0;
+
 
 
 //----------------------------------------------
@@ -58,16 +45,12 @@ mat2 rotate(float a)
 //----------------------------------------------
 
 vec2 TEXTURE_PIXEL_SIZE = CoronaTexelSize.zw;
-P_DEFAULT float TIME = CoronaTotalTime; // * speed
 
 P_COLOR vec4 COLOR;
 
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-    //progress = abs(sin(CoronaTotalTime));
-    
-    float progress = sin(TIME * Speed);
     
     //----------------------------------------------
 
@@ -81,12 +64,12 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     
     
     //vortex
-    float cTime = Strength * progress;
+    float cTime = Strength * Progress;
     d = smoothstep(0., Range, Range - d) * cTime;
     uv *= rotate(d);
     
     //shrink
-    float edge = 1. * abs(progress);
+    float edge = 1. * abs(Progress *.55);
     uv = uv + normalize(uv) * edge;
     
     uv += center;

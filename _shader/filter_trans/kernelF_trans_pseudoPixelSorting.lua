@@ -17,10 +17,10 @@ kernel.name = "pseudoPixelSorting"
 kernel.vertexData =
 {
   {
-    name = "progress",
-    default = 1,
+    name = "Progress",
+    default = .5,
     min = 0,
-    max = 2,
+    max = 1,
     index = 0, 
   },
 }
@@ -29,7 +29,7 @@ kernel.vertexData =
 kernel.fragment =
 [[
 
-float progress = CoronaVertexUserData.x;
+float Progress = CoronaVertexUserData.x * 2;
 //----------------------------------------------
 
 uniform sampler2D SCREEN_TEXTURE;
@@ -65,13 +65,13 @@ P_UV vec2 FRAGCOORD = UV * iResolution;
     float mask = smoothstep(a, b, average);
     
     // Pseudo Pixel Sorting
-    float sort_threshold = 1.0 - clamp(progress / 2.6, 0.0, 1.0);
+    float sort_threshold = 1.0 - clamp(Progress / 2.6, 0.0, 1.0);
     vec2 sort_uv = vec2(uv.x, sort_threshold);
     
     // Curved melting transition
     vec2 transition_uv = uv;
     float turbulance = fract(sin(dot(vec2(transition_uv.x), vec2(12.9, 78.2)))* 437.5);
-    transition_uv.y += pow(progress, 2.0 + (progress * 2.0)) * mask * turbulance;
+    transition_uv.y += pow(Progress, 2.0 + (Progress * 2.0)) * mask * turbulance;
     COLOR = texture2D(SCREEN_TEXTURE, transition_uv);
     
     // Draw pixel sorting effect behind the melting transition

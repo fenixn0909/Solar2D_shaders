@@ -1,8 +1,8 @@
 
 --[[
-  Origin Author: Zeh Fernando
-  https://gl-transitions.com/editor/DreamyZoom
-  License: MIT
+    Origin Author: Zeh Fernando
+    https://gl-transitions.com/editor/DreamyZoom
+    License: MIT
   
 --]]
 
@@ -14,14 +14,11 @@ kernel.category = "filter"
 kernel.group = "trans"
 kernel.name = "dreamyZoom"
 
---Test
--- kernel.isTimeDependent = true
-
 kernel.vertexData =
 {
   {
     name = "progress",
-    default = 1,
+    default = .5,
     min = 0,
     max = 1,
     index = 0, 

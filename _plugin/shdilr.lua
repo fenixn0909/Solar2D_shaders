@@ -130,7 +130,15 @@ M.cleanup_register = function()    maRegi = {} end
 
 
 -------------------------------------------------------------------------------------------------
--- Debug
+-- Texture Mode
+----------------------------------------------------------------------------------------------------
+M.set_texture_wrap = function( k_ ) -- Key: 'repeat', 'mirroredRepeat', 'clampToEdge'
+    display.setDefault( "textureWrapX", k_ )
+    display.setDefault( "textureWrapY", k_ )
+end
+
+-------------------------------------------------------------------------------------------------
+-- Bank
 ----------------------------------------------------------------------------------------------------
 M.bank_set_union = function( i_ )    
     miUN_cur = i_ 
@@ -170,13 +178,14 @@ M.bank_print_dbInfo = function( )
     local _d = m.get_cur_data()
     print('category: '.. _d.category) print('group: '.. _d.group) print('name: '.. _d.name)
 end
-M.bank_get_data = function( ind_ ) return  m.get_cur_data()    end
-M.bank_get_kernal = function( ind_ ) return m.get_kernal_path( m.get_cur_data()  )    end
+M.bank_get_data = function( ) return  m.get_cur_data()    end
+M.bank_get_kernal = function( ) return m.get_kernal_path( m.get_cur_data()  )    end
 M.bank_get_fileName = function( ind_ ) return maaList[miUN_cur][ind_ or miBF_cur]    end
-M.bank_get_dVertex = function( ind_ )    if not  m.get_cur_data().vertexData then print('No VertexData Found!') return nil end
+M.bank_get_textureWrap = function( ) return m.get_cur_data().textureWrap    end
+M.bank_get_dVertex = function( )    if not  m.get_cur_data().vertexData then print('No VertexData Found!') return nil end
 return  m.get_cur_data().vertexData    end
 
-M.bank_get_dUniform = function( ind_ )    if not  m.get_cur_data().uniformData then print('No UniformData Found!') return nil end
+M.bank_get_dUniform = function( )    if not  m.get_cur_data().uniformData then print('No UniformData Found!') return nil end
 return  m.get_cur_data().uniformData    end
 
 M.new_dUniform_mat4 = function( dO_ )  --@dOrigin
@@ -213,6 +222,7 @@ m.extract_info = function( d_ )
     local _t = {}
     _t.category, _t.group, _t.name = d_.category, d_.group, d_.name
     _t.vertexData, _t.uniformData = d_.vertexData, d_.uniformData
+    _t.textureWrap = d_.textureWrap or 'clampToEdge'
 return _t    end
 
 -------------------------------------------------------------------------------------------------

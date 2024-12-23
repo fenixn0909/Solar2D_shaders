@@ -30,8 +30,8 @@ kernel.name = "pixelDissolve"
 kernel.vertexData =
 {
   {
-    name = "progress",
-    default = 1,
+    name = "Progress",
+    default = .5,
     min = 0,
     max = 1,
     index = 0, 
@@ -45,56 +45,56 @@ kernel.vertexData =
   },
 }
 
+kernel.vertexData =
+{
+  { name = "Progress", default = .5, min = 0, max = 1, index = 0, },
+  { name = "ResX", default = 100., min = 0, max = 5000, index = 1, },
+  { name = "ResY", default = 100., min = 0, max = 5000, index = 2, },
+}
 
 kernel.fragment =
 [[
-P_DEFAULT float progress = CoronaVertexUserData.x;
-vec4 colorBG = vec4(0,0,0,0);
-P_DEFAULT float vd_resolution = CoronaVertexUserData.y;
+P_DEFAULT float Progress = CoronaVertexUserData.x;
+P_DEFAULT float ResX = CoronaVertexUserData.y;
+P_DEFAULT float ResY = CoronaVertexUserData.z;
 
 //----------------------------------------------
-//uniform float time = 1.0; //:hint_range(0.0, 1.57, 0.001) <- progress
 const float pRate = 1.57; // profressRate
 
 // The smaller value, the lager pxBlock. 5000 ~= minimum pxSize
-P_DEFAULT vec2 custom_resolution = vec2( vd_resolution, vd_resolution ); 
+P_DEFAULT vec2 Resolution_UV = vec2( ResX, ResY ); 
 
-
-
-
+//----------------------------------------------
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,96.233))) * 43758.5453);
 }
-
+//----------------------------------------------
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
-  P_UV vec2 UV = texCoord;
-  P_COLOR vec4 COLOR;
-  //progress = abs(sin(CoronaTotalTime));
-  progress *= pRate;
-  progress = pRate - progress; // Inversion  
-  //----------------------------------------------
-  
-  vec2 within_texture_pixel=vec2(floor(UV * custom_resolution));
-  vec4 color= texture2D( CoronaSampler0,  UV);
-  
-  /*
-  vec2 texture_resolution = 1.0 / CoronaTexelSize.zw;
-  vec2 within_texture_pixel=floor(UV * texture_resolution);
-  vec4 color= texture2D(CoronaSampler0,UV);
-  */
+    P_UV vec2 UV = texCoord;
+    P_COLOR vec4 COLOR;
+    //Progress = abs(sin(CoronaTotalTime));
+    Progress *= pRate;
+    Progress = pRate - Progress; // Inversion  
+    //----------------------------------------------
 
-  if(sin(progress) > rand(within_texture_pixel))
-    COLOR = color;
-  else
-    COLOR = vec4(0.0,0.0,0.0,0.0);
+    vec2 within_texture_pixel = vec2(floor(UV * Resolution_UV));
+    vec4 color= texture2D( CoronaSampler0,  UV);
 
-  //----------------------------------------------
-  
-  
-  
+    /*
+    vec2 texture_resolution = 1.0 / CoronaTexelSize.zw;
+    vec2 within_texture_pixel=floor(UV * texture_resolution);
+    vec4 color= texture2D(CoronaSampler0,UV);
+    */
 
-  return CoronaColorScale( COLOR );
+    if(sin(Progress) > rand(within_texture_pixel))
+        COLOR = color;
+    else
+        COLOR = vec4(0.0,0.0,0.0,0.0);
+
+    //----------------------------------------------
+
+    return CoronaColorScale( COLOR );
 }
 ]]
 

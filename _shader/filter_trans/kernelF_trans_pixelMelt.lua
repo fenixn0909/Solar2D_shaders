@@ -20,7 +20,7 @@ kernel.vertexData =
 {
   {
     name = "progress",
-    default = 1,
+    default = .5,
     min = 0,
     max = 1,
     index = 0, 

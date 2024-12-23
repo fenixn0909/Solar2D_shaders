@@ -1,14 +1,10 @@
 
 --[[
-  Origin Author: Fernando Kuteken
-  https://gl-transitions.com/editor/circle
-  License: MIT
-  
-  
+    Origin Author: Fernando Kuteken
+    https://gl-transitions.com/editor/circle
+    License: MIT
 
 --]]
-
-
 
 local kernel = {}
 kernel.language = "glsl"
@@ -43,8 +39,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
   P_UV vec2 uv = texCoord;
   P_COLOR vec4 COLOR;
-  //progress = abs(sin(CoronaTotalTime*0.5));
-  //progress = 0.48;
+  
   //----------------------------------------------
   float distance = length(uv - center);
   float radius = sqrt(8.0) * abs(progress - 0.5);

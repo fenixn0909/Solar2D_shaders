@@ -1,11 +1,14 @@
 
 --[[
-  Origin Author: agurkas
-  https://godotshaders.com/author/agurkas/
-  
-  This is a simple shader for a circle transition. It expects screen width and screen height in pixels and knowing those it always produces a perfect circle in the center of a rect.
+    Origin Author: agurkas
+    https://godotshaders.com/author/agurkas/
 
-  For the best result, have a script that sets the screen_width and screen_height uniforms  in _ready() of a script to the rect_size of a ColorRect. This way the screen_width and screen_height will always be automatically set to correct size.
+    This is a simple shader for a circle transition. It expects screen width and screen height in pixels and knowing those it always produces a perfect circle in the center of a rect.
+
+    For the best result, have a script that sets the screen_width and screen_height uniforms  in _ready() of a script to the rect_size of a ColorRect. This way the screen_width and screen_height will always be automatically set to correct size.
+
+    !! Make sure sprite pixels are all INISED the borders, NOT Connected !!
+
 --]]
 
 
@@ -16,14 +19,12 @@ kernel.category = "filter"
 kernel.group = "trans"
 kernel.name = "spriteMask"
 
---Test
---kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
   {
     name = "progress",
-    default = 1,
+    default = .5,
     min = 0,
     max = 1,
     index = 0, 
@@ -35,35 +36,32 @@ kernel.fragment =
 [[
 P_DEFAULT float progress = CoronaVertexUserData.x;
 //----------------------------------------------
-//render_mode unshaded;
 
-float screen_width = 256.0;
-float screen_height = 256.0;
+float screen_width = 320.0;
+float screen_height = 320.0;
 
+//----------------------------------------------
 vec2 scale(vec2 uv, float x, float y)
 {
-  mat2 scale = mat2(vec2(x, 0.0), vec2(0.0, y));
-  
-  uv -= 0.5;
-  uv = uv * scale;
-  uv += 0.5;
-  return uv;
+    mat2 scale = mat2(vec2(x, 0.0), vec2(0.0, y));
+
+    uv -= 0.5;
+    uv = uv * scale;
+    uv += 0.5;
+    return uv;
 }
 
 float when_neq(float x, float y) {
-  return abs(sign(x - y));
+    return abs(sign(x - y));
 }
 
 float when_gt(float x, float y) { //great than
-  return 1.0 - max(sign(x - y), 0.0);
-  //return abs( max(sign(y - x), 0.0) );
-  //return when_neq(x,y);
+    return 1.0 - max(sign(x - y), 0.0);
 }
 
+//----------------------------------------------
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
-
-
 
   //float v_sizeMask = abs(sin(CoronaTotalTime*5)*10);
   //float v_sizeMask = mod(CoronaTotalTime*5, 10000)*0.01 * CoronaTotalTime*15;
@@ -74,8 +72,6 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 
   // Scale
   vec2 uvScale = (texCoord - 0.5) * v_sizeMask + 0.5;
-
-
 
 
   //Test
@@ -96,11 +92,8 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
   //If texColor.a > 0, get alpha = 0
   COLOR.a = when_gt( texColor.a, 0 );
   //COLOR.rgb *= when_gt( texColor.a, 0 );
-
   //COLOR.rgb *= when_gt( texColor.a, 0 );
   
-
-
   //float ratio = screen_width / screen_height;
   //float dist = distance(vec2(0.5, 0.5), vec2(mix(0.5, texCoord.x, ratio), texCoord.y));
   

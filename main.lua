@@ -42,7 +42,7 @@ local mC_akCate = { 'Generator', 'Filter', 'F_Trans', 'Composite' }
 local mC_aaImgFN = {
     { "BG1.jpeg","BG2.jpeg","BG3.jpeg","BG4.jpeg","BG5.jpeg"},
     { "SPR1.png","SPR2.png","SPR3.png","SPR4.png","SPR5.png","NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg"},
-    { "NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg"},
+    { "NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg","BG1.jpeg","BG2.jpeg","BG3.jpeg","BG4.jpeg","BG5.jpeg"},
 }
 
 local mC_nBKS = 5     -- Boost-Key Step Scale
@@ -54,8 +54,8 @@ local mC_pthC = "_shader/composite/"
 local mC_nParam = 32
 ----------------------------------------------------------------------------------------------------
 display.setStatusBar( display.HiddenStatusBar )
-display.setDefault( "textureWrapX", "repeat" )
-display.setDefault( "textureWrapY", "repeat" )
+-- display.setDefault( "textureWrapX", "repeat" )
+-- display.setDefault( "textureWrapY", "repeat" )
 ----------------------------------------------------------------------------------------------------
 local shdilr = require( "_plugin.shdilr" )
 local inspect = require( "_plugin.inspect" ) -- Debug
@@ -94,7 +94,7 @@ local maoImage = {} -- 1:Background, 2:Sprite, 3:Noise
 local maiImgCur = { 0, 0, 1 } -- Note for ERROR prevention: DON'T mess it up!   1:Background, 2:Sprite, 3:Noise
 
 --=== Shader Data
-local maShdrData_cur      
+local mtShdrData_cur      
 
 --=== Management
 local miCateCur = 1
@@ -122,7 +122,7 @@ local M,m,mm,mtFn,mLstnr = {},{},{},{},{}
 ----------------------------------------------------------------------------------------------------
 
 M.startup = function()  -- Calls only once
-
+    
     local _aList
     _aList = file_get_match_sub( mC_pthG, '^%a.*', '.lua' )
     shdilr.load_list( mC_pthG:gsub('%/','%.'), _aList, 1 )
@@ -149,7 +149,7 @@ M.init = function()
     end
 
     --=== RootUI
-    m.upd_img( 1, 1 )
+    m.upd_img( 1, 2 )
     m.upd_img( 2, 1 )
 
     m.init_switch( maoGrp[0], maoSwitch, mLstnr.aPage_switch ) -- Page Change
@@ -170,18 +170,20 @@ M.init = function()
     toggle_visible( false, maoGrp[2], maoGrp[3])
 
     --=== Apply Shader Or ......
-    m.apply_bank_shader()
+    -- m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_electricHatch' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_cloudMotion' )
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_ray_holy' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_checkerboard' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_vortexOverlay' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
-    -- m.apply_specific_shader( mC_akCate[3], 'kernelF_trans_rippleBurnOut' )
-    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_wobble_ripple' )
+    m.apply_specific_shader( mC_akCate[2], 'kernelF_shadow_topdown2D' )
+    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_color_paletteLimit' )
     
+    m.upd_img( 2, 1 )   -- Update again for textureWrap
+
     ----------------------------------------------------------------------------------------------------
 
 end
@@ -343,20 +345,26 @@ m.apply_specific_shader = function( kC_, kN_ )  -- @keyCategory, @keyFileName
     m.apply_bank_shader()
 end
 
-m.apply_bank_shader = function()
-
+mm.load_shader_data = function()
     if shdilr.bank_get_dUniform() and shdilr.bank_get_dVertex() then error("Do not use both VertexData and UniformData") end
 
     if shdilr.bank_get_dUniform() then
-        maShdrData_cur = shdilr.new_dUniform_mat4()
-        maShdrData_cur.dataType = 'TypD_Uniform'
+        mtShdrData_cur = shdilr.new_dUniform_mat4()
+        mtShdrData_cur.dataType = 'TypD_Uniform'
     else 
-        maShdrData_cur = shdilr.bank_get_dVertex() or {}
-        maShdrData_cur.dataType = 'TypD_Vertex'
+        mtShdrData_cur = shdilr.bank_get_dVertex() or {}
+        mtShdrData_cur.dataType = 'TypD_Vertex'
     end
+end
+
+m.apply_bank_shader = function()
+
+    mm.load_shader_data()
+
+    -- shdilr.set_texture_wrap( shdilr.bank_get_textureWrap() )
 
     --=== Apply Text
-    m.upd_UI( maShdrData_cur, mtoTextVD )
+    m.upd_UI( mtShdrData_cur, mtoTextVD )
     --=== Apply Shader
     mm.set_composite_fill()
     shdilr:bank_apply( maoImage[2], {} )
@@ -388,7 +396,7 @@ m.upd_UI = function( d_, toText_ )
             toText_.tVD_float[i].text = _aVD[i].default
             toggle_visible( true, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
             -- mm.slider_value_to_percent( i, _aVD[i].default )
-            mm.slider_value_to_percent( i, maShdrData_cur, _aVD[i].default )
+            mm.slider_value_to_percent( i, mtShdrData_cur, _aVD[i].default )
         end
     end
 end
@@ -408,7 +416,9 @@ m.upd_img = function( iT_, iI_ ) --@indexType, @indexImage
     maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeWH, _sizeWH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeWH*.5+32 );
     
     -- Apply Shader: when Sprite changed
-    if iT_ == 2 then    shdilr:bank_apply( maoImage[2], {} ) end
+    if iT_ == 2 then    shdilr:bank_apply( maoImage[2], {} ) 
+        -- maoImage[iT_]:scale( .5, .5)
+    end
 
 return true    end
 
@@ -465,6 +475,7 @@ mm.swap_shader = function( i_ )    local _akOpt = {'bank_prev','bank_next'}     
     shdilr[_akOpt[i_]]()
     shdilr.bank_print_dbInfo()
     m.apply_bank_shader()
+    moScrView:scrollToPosition{ time= 0, y= 0 }
 end
 mm.swap_menu = function( k_ )    local _iNew    assert( (k_=='+' or k_=='-'), "invalid key: "..k_)
     if k_ == '-' then    _iNew = miSwitchCur-1 == 0 and #maoSwitch or miSwitchCur-1    elseif k_ == '+' then _iNew = miSwitchCur+1 > #maoSwitch and 1 or miSwitchCur+1     end;
@@ -484,7 +495,7 @@ mm.tweak_slider = function( k_, i_, n_ )    assert( (k_=='+' or k_=='-'), "inval
     if k_ == '-' then _v = _v-n_    elseif k_ == '+' then _v = _v+n_    end
     _v = _v < 0 and 0 or _v;    _v = _v > 100 and 100 or _v     -- Clamp 0~100
     maoSlider[i_]:setValue( _v )
-    mm.slider_percent_to_value( i_, maShdrData_cur, _v )
+    mm.slider_percent_to_value( i_, mtShdrData_cur, _v )
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -504,10 +515,10 @@ mm.slider_percent_to_value = function( i_, d_, fV_ ) --@Index, @fPercentage
     local _value = fV_ * _fTick + _tVD.min
     mtoTextVD.tVD_float[i_].text = _value
     
-    if maShdrData_cur.dataType == 'TypD_Uniform' then  
+    if mtShdrData_cur.dataType == 'TypD_Uniform' then  
         d_.adToShdr[_tVD.iMat4][_tVD.iArr] = _value
         shdilr.sync_param( maoImage[2], { [ d_.aName[_tVD.iMat4] ]= d_.adToShdr[_tVD.iMat4] } )
-    elseif maShdrData_cur.dataType == 'TypD_Vertex' then    
+    elseif mtShdrData_cur.dataType == 'TypD_Vertex' then    
         shdilr.sync_param( maoImage[2], { [_tVD.name]= _value } )
     end
     
@@ -518,7 +529,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 mLstnr.aVD_slider = {}
-for i=1,mC_nParam do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, maShdrData_cur, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
+for i=1,mC_nParam do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, mtShdrData_cur, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
 
 mLstnr.aPage_switch = {}
 for i=1,3 do    mLstnr.aPage_switch[i] = function( e_ ) mm.trig_switch(i)     end end -- print("e_.target.id: "..e_.target.id)

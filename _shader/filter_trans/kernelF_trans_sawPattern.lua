@@ -8,7 +8,6 @@
 
   MIT License
 
-
 --]]
 
 
@@ -18,9 +17,6 @@ kernel.language = "glsl"
 kernel.category = "filter"
 kernel.group = "trans"
 kernel.name = "sawPattern"
-
---Test
--- kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
@@ -43,9 +39,8 @@ kernel.vertexData =
 
 kernel.fragment =
 [[
-P_DEFAULT float progress = CoronaVertexUserData.x;
+float progress = CoronaVertexUserData.x;
 P_UV float gridAmount = CoronaVertexUserData.y;
-
 
 //----------------------------------------------
 uniform float saw_l_shift = -0.267;
@@ -56,8 +51,6 @@ uniform float saw_l_scale = 0.821;
 
 uniform vec2 uv_scale = vec2( 2.0, 8.0 );
 uniform vec4 colorTint = vec4( 1.0, 1.0, 1.0, 1.0 ); //: hint_color 
-
-
 
 float left = -2.0;
 float offsetL = 0.0;

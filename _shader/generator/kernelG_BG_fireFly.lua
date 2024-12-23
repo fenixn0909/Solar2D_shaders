@@ -11,25 +11,20 @@
 
 --]]
 
-
-
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
 kernel.group = "BG" 
 kernel.name = "fireFly"
 
-
-kernel.isTimeDependent = true
-
 kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  { name = "Speed",     default = 1.5, min = 0, max = 30, index = 0, },
-  { name = "Size",       default = 2.5, min = 0, max = 5, index = 1, },
-  { name = "Zoom",     default = 20, min = 0.01, max = 50, index = 2, },
-  { name = "EdgeR",   default = 2, min = 1, max = 10, index = 3, },
+  { name = "Speed",         default = 1.5, min = 0, max = 30, index = 0, },
+  { name = "Size",          default = 2.5, min = 0, max = 5, index = 1, },
+  { name = "Zoom",          default = 20, min = 0.01, max = 50, index = 2, },
+  { name = "Blink_Spd",     default = 1, min = 0, max = 20, index = 3, },
 } 
 
 kernel.fragment =
@@ -38,14 +33,8 @@ kernel.fragment =
 float Speed = CoronaVertexUserData.x;
 float Size = CoronaVertexUserData.y;
 float Zoom = CoronaVertexUserData.z;
-float EdgeR = CoronaVertexUserData.w;
+float Blink_Spd = CoronaVertexUserData.w;
 //----------------------------------------------
-
-//float Speed = .5;
-//float Zoom = 20.; // The less the larger and fewer
-//float Size = 1.5; // The less the smaller
-
-
 
 vec2 SCREEN_PIXEL_SIZE = CoronaTexelSize.zw;
 vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
@@ -53,9 +42,6 @@ vec2 iResolution = 1.0 / SCREEN_PIXEL_SIZE;
 float PixelW = SCREEN_PIXEL_SIZE.y;
 
 P_COLOR vec4 Col_Fly = vec4( 1.0, 0.0, 0.0, 1 );
-
-// #VARIATION: Fly Blinks
-#define isBlink
 
 
 //----------------------------------------------
@@ -99,11 +85,8 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
             //=== Color Variation
             float randV = 1.0;
 
-            #ifdef isBlink
-              //randV = smoothstep(0.1, 0.9, abs(sin(iTime*1)*0.5 ) );
-              randV = abs(sin(iTime*1)*0.5 );
-              //randV = step( 0.5, abs(sin(iTime*2)) ) +1;
-            #endif
+            // Blink
+            randV = abs(sin(iTime*Blink_Spd)*.5 );
 
             // Single Color Flies
             float p_size = random(id+offset+randV/7)/20.*Size;
