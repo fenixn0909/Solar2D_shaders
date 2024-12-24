@@ -14,8 +14,8 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "BG"
-kernel.name = "cloud2D"
+kernel.group = "cloud"
+kernel.name = "topdown"
 
 
 kernel.isTimeDependent = true

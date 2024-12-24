@@ -40,8 +40,8 @@ local mC_pthFldr = "_img/"
 local mC_akCate = { 'Generator', 'Filter', 'F_Trans', 'Composite' }
 
 local mC_aaImgFN = {
-    { "BG1.jpeg","BG2.jpeg","BG3.jpeg","BG4.jpeg","BG5.jpeg"},
-    { "SPR1.png","SPR2.png","SPR3.png","SPR4.png","SPR5.png","NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg"},
+    { "BG1.jpeg","BG2.jpeg","BG3.jpeg","BG4.jpeg","BG5.jpeg",},
+    { "SPR1.png","SPR2.png","SPR3.png","SPR4.png","SPR5.png","SPR6.png","NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg"},
     { "NOZ1.jpeg","NOZ2.jpeg","NOZ3.jpeg","NOZ4.jpeg","NOZ5.jpeg","BG1.jpeg","BG2.jpeg","BG3.jpeg","BG4.jpeg","BG5.jpeg"},
 }
 
@@ -150,7 +150,7 @@ M.init = function()
 
     --=== RootUI
     m.upd_img( 1, 2 )
-    m.upd_img( 2, 1 )
+    m.upd_img( 2, 2 )
 
     m.init_switch( maoGrp[0], maoSwitch, mLstnr.aPage_switch ) -- Page Change
     moSegCon = m.new_segCon( maoGrp[0], mLstnr.segCon, mC_akCate ) -- Shader Category
@@ -173,16 +173,16 @@ M.init = function()
     -- m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_electricHatch' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_steppedGradient4' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_checkerboard' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_vortexOverlay' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_pixel_artGradient' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
-    m.apply_specific_shader( mC_akCate[2], 'kernelF_shadow_topdown2D' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_sphere_spine2D' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_color_paletteLimit' )
     
-    m.upd_img( 2, 1 )   -- Update again for textureWrap
+    m.upd_img( 2, 1 )   -- Trigger textureWrap setting
 
     ----------------------------------------------------------------------------------------------------
 
@@ -361,7 +361,8 @@ m.apply_bank_shader = function()
 
     mm.load_shader_data()
 
-    -- shdilr.set_texture_wrap( shdilr.bank_get_textureWrap() )
+    shdilr.set_texture_wrap( shdilr.bank_get_textureWrap() )
+    -- shdilr.set_texture_wrap( 'repeat' )
 
     --=== Apply Text
     m.upd_UI( mtShdrData_cur, mtoTextVD )

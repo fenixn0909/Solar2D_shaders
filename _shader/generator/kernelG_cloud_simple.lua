@@ -16,8 +16,8 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "BG"
-kernel.name = "cloudSimple" -- One Layer
+kernel.group = "cloud"
+kernel.name = "simple" -- One Layer
 
 kernel.isTimeDependent = true
 

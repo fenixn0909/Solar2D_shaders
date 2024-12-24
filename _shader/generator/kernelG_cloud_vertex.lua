@@ -2,7 +2,7 @@
 --[[
 
     https://www.shadertoy.com/view/msfXD8
-
+    
 
     
 --]]
@@ -12,8 +12,8 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "BG"
-kernel.name = "cloudVertex"
+kernel.group = "cloud"
+kernel.name = "vertex"
 
 
 kernel.isTimeDependent = true

@@ -50,7 +50,7 @@ float when_gt(float x, float y) { //greater than return 1
   return max(sign(x - y), 0.0);
 }
 
-// -----------------------------------------------
+//-----------------------------------------------
 
 P_COLOR vec4 COLOR = vec4(0);
 vec2 TEXTURE_PIXEL_SIZE = CoronaTexelSize.zw;

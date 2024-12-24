@@ -10,8 +10,8 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "BG"
-kernel.name = "cloudMotion"
+kernel.group = "cloud"
+kernel.name = "motionPF" -- Platformer
 
 kernel.isTimeDependent = true
 
