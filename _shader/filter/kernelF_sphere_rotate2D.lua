@@ -17,7 +17,7 @@ kernel.name = "rotate2D"
 
 kernel.vertexData =
 {
-  { name = "RotX",  default = 0, min = -.15, max = .15, index = 0, },
+  { name = "RotX",  default = 0, min = -.3, max = .3, index = 0, },
   { name = "RotY",  default = 0, min = -.15, max = .15, index = 1, },
   { name = "RotZ",  default = .94, min = 0, max = 1, index = 2, },
   { name = "RotW",  default = 0, min = -.3, max = .3, index = 3, },
@@ -35,7 +35,7 @@ float RotW = CoronaVertexUserData.w;
 uniform sampler2D TEXTURE;
 vec4 quaternion = vec4(RotX, RotY, RotZ, RotW); // Default: identity quaternion
 
-float UV_Correctoin = .25;
+float UV_Correction = .25; // .5 
 
 const float PI = 3.14159265359;
 const float TAU =  6.283185307179586;
@@ -74,7 +74,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
         float phi = acos(clamp(sphere_pos.y, -1.0, 1.0));
         
         // Map spherical coordinates to UV space
-        vec2 spherical_uv = vec2(UV_Correctoin + theta / TAU, phi / PI);
+        vec2 spherical_uv = vec2(UV_Correction + theta / TAU, phi / PI);
 
         // Sample texture using spherical coordinates
         COLOR = texture2D(TEXTURE, spherical_uv);

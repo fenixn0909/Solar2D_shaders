@@ -156,9 +156,9 @@ M.init = function()
     moSegCon = m.new_segCon( maoGrp[0], mLstnr.segCon, mC_akCate ) -- Shader Category
 
     --=== Page: Param
-    m.init_scrollerView_UF( maoGrp[1], mLstnr.scrView ) 
+    m.init_scrollerView( maoGrp[1], mLstnr.scrView ) 
     m.init_textParam_VD( moScrView, mtoTextVD )
-    m.init_slider_VD( moScrView, maoSlider, mLstnr.aVD_slider )  
+    m.init_slider( moScrView, maoSlider, mLstnr.aVD_slider )  
     
     --=== Page: Texture
     moPckrWhl = m.initNew_wheel( maoGrp[2], mLstnr.pckrWhl )
@@ -173,14 +173,14 @@ M.init = function()
     -- m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_steppedGradient4' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_checkerboard' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_simpleSpiralsDemo' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_pixel_artGradient' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_color_hueSwap' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_sphere_spine2D' )
-    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_color_paletteLimit' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_pixDot' )
+    m.apply_specific_shader( mC_akCate[4], 'kernelC_fxNoise_lensFlare' )
     
     m.upd_img( 2, 1 )   -- Trigger textureWrap setting
 
@@ -228,7 +228,7 @@ m.init_textParam_VD = function( grp_, toText_ )
 end
 
 --=== SliderVD: for VertexData
-m.init_slider_VD = function( grp_, aoSlider_, aLstnr_ )
+m.init_slider = function( grp_, aoSlider_, aLstnr_ )
     
     local _bX = 218 - SCRN_DL
     local _bY = 16
@@ -244,7 +244,7 @@ m.init_slider_VD = function( grp_, aoSlider_, aLstnr_ )
 end
 
 --=== ScrollerView: Uniform
-m.init_scrollerView_UF = function( grp_, aLstnr_ )
+m.init_scrollerView = function( grp_, aLstnr_ )
     -- Create a scrollView
     moScrView = widget.newScrollView {
         left= SCRN_DL,  top= SCRN_DB - 130,
@@ -385,19 +385,24 @@ end
 
 m.upd_UI = function( d_, toText_ )
 
-    local _aVD = d_
+    local _aD = d_
     toText_.kernal.text = shdilr.bank_get_kernal()
     toText_.filename.text = shdilr.bank_get_fileName()
+
+    -- error( "_aD: "..inspect(_aD) )
 
     --=== VertexData Texts & Sliders Visible
     for i=1,mC_nParam do
         toggle_visible( false, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
-        if _aVD[i] then 
-            toText_.tVD_name[i].text = _aVD[i].name
-            toText_.tVD_float[i].text = _aVD[i].default
-            toggle_visible( true, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
-            -- mm.slider_value_to_percent( i, _aVD[i].default )
-            mm.slider_value_to_percent( i, mtShdrData_cur, _aVD[i].default )
+        if _aD[i] then 
+            if _aD[i].name == '' then  -- Keep hiding param UI
+            else 
+                toText_.tVD_name[i].text = _aD[i].name
+                toText_.tVD_float[i].text = _aD[i].default
+                toggle_visible( true, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
+                -- mm.slider_value_to_percent( i, _aD[i].default )
+                mm.slider_value_to_percent( i, mtShdrData_cur, _aD[i].default )
+            end
         end
     end
 end
@@ -496,7 +501,7 @@ mm.tweak_slider = function( k_, i_, n_ )    assert( (k_=='+' or k_=='-'), "inval
     if k_ == '-' then _v = _v-n_    elseif k_ == '+' then _v = _v+n_    end
     _v = _v < 0 and 0 or _v;    _v = _v > 100 and 100 or _v     -- Clamp 0~100
     maoSlider[i_]:setValue( _v )
-    mm.slider_percent_to_value( i_, mtShdrData_cur, _v )
+    mm.slider_percent_to_value( i_, mtShdrData_cur, _v ) 
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -515,10 +520,11 @@ mm.slider_percent_to_value = function( i_, d_, fV_ ) --@Index, @fPercentage
     local _fTick = (_tVD.max - _tVD.min) / 100
     local _value = fV_ * _fTick + _tVD.min
     mtoTextVD.tVD_float[i_].text = _value
-    
+     
     if mtShdrData_cur.dataType == 'TypD_Uniform' then  
         d_.adToShdr[_tVD.iMat4][_tVD.iArr] = _value
         shdilr.sync_param( maoImage[2], { [ d_.aName[_tVD.iMat4] ]= d_.adToShdr[_tVD.iMat4] } )
+        -- print( "d_.adToShdr: "..inspect(d_.adToShdr) )
     elseif mtShdrData_cur.dataType == 'TypD_Vertex' then    
         shdilr.sync_param( maoImage[2], { [_tVD.name]= _value } )
     end

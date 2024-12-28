@@ -10,7 +10,7 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "lit"
+kernel.group = "Lit"
 kernel.name = "glowRect2d"
 
 

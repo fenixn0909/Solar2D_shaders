@@ -22,9 +22,9 @@ kernel.uniformData =
         name = "uniSetting",
         paramName = {
             'Steps_1','Steps_2','Steps_3','Smooth',    --
-            'Ratio_1','Ratio_2','Ratio_3','NA',    -- sum(4 Ratio)/4 * each Ratio
-            'Offset_1','Offset_2','Offset_3','NA',
-            'NA','NA','NA','NA',
+            'Ratio_1','Ratio_2','Ratio_3','',    -- sum(4 Ratio)/4 * each Ratio
+            'Offset_1','Offset_2','Offset_3','',
+            '','','','',
             
         },
         default = {
@@ -82,8 +82,8 @@ kernel.uniformData =
 kernel.fragment =
 [[
 
-uniform mat4 u_UserData0; // mat4A
-uniform mat4 u_UserData1; // mat4A_2
+uniform mat4 u_UserData0; // uniSetting
+uniform mat4 u_UserData1; // colorMat4
 
 vec4 StepsV4 = u_UserData0[0];
 vec4 RatioV4 = u_UserData0[1];

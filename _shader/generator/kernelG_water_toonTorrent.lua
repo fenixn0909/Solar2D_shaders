@@ -19,8 +19,8 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "BG"
-kernel.name = "waterToonTorrent"
+kernel.group = "water"
+kernel.name = "toonTorrent"
 
 
 kernel.isTimeDependent = true

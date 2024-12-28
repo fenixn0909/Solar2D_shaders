@@ -105,9 +105,10 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     vec3 noise = vec3(simplex3d(p3),simplex3d(p3+10.),simplex3d(p3+20.));
     uv = rotate2D(uv, noise.z*Rotation*.1);
     uv = (uv+1.)/2.;
-    COLOR = vec4(texture2D( CoronaSampler0, uv+noise.xy*Amount*0.1 ).rgb, 1.0);
+    COLOR = vec4(texture2D( CoronaSampler0, uv+noise.xy*Amount*0.1 ));
 
     //----------------------------------------------
+    
     
     return CoronaColorScale( COLOR );
 }

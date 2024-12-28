@@ -30,8 +30,8 @@ local miBF_cur              -- cur mIndexBankFile
 
 
 ----------------------------------------------------------------------------------------------------
--- Bank
 ----------------------------------------------------------------------------------------------------
+
 --=== Load file list array
 M.load_list = function( kFdr_, aFN_, iU_ )    --@kFilePrefix, @aFileName, @iUnion,
     
@@ -51,9 +51,6 @@ M.load_list = function( kFdr_, aFN_, iU_ )    --@kFilePrefix, @aFileName, @iUnio
         end
     end
 end
-
-
-
 
 ----------------------------------------------------------------------------------------------------
 -- Set & Apply
@@ -138,7 +135,7 @@ M.set_texture_wrap = function( k_ ) -- Key: 'repeat', 'mirroredRepeat', 'clampTo
 end
 
 -------------------------------------------------------------------------------------------------
--- Bank
+-- Bank Setting
 ----------------------------------------------------------------------------------------------------
 M.bank_set_union = function( i_ )    
     miUN_cur = i_ 
@@ -152,7 +149,6 @@ end
 M.bank_set_iBF_byKey = function( k_ )
     local _iUN = a_val2ind( maaList[miUN_cur],  k_ )  assert( _iUN, "no key found: "..k_)
     miBF_cur = _iUN
-    -- error("_iUN: ".._iUN)
 end
 
 --=== Step to next index
@@ -167,13 +163,9 @@ M.bank_prev = function()
     if miBF_cur < 1 then    miBF_cur = #maaList[ miUN_cur ] end
 end
 
---=== Apply Shader in Bank
-M.bank_apply = function( self, o_, t_ )  --@oImg, @tOpt
-    if not m.get_cur_data() then print("no previous shader found!") return end
-    local _k = m.get_kernal_path( m.get_cur_data() )
-    M.apply_U( self, _k, o_, t_ )
-return self    end
-
+----------------------------------------------------------------------------------------------------
+-- Bank Data Retriving
+----------------------------------------------------------------------------------------------------
 M.bank_print_dbInfo = function( )
     local _d = m.get_cur_data()
     print('category: '.. _d.category) print('group: '.. _d.group) print('name: '.. _d.name)
@@ -210,8 +202,21 @@ M.new_dUniform_mat4 = function( dO_ )  --@dOrigin
     end
 
 return _dN    end
--------------------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------------------
+-- Bank Apply
+-------------------------------------------------------------------------------------------------
+--=== Apply Shader in Bank
+M.bank_apply = function( self, o_, t_ )  --@oImg, @tOpt
+    if not m.get_cur_data() then print("no previous shader found!") return end
+    local _k = m.get_kernal_path( m.get_cur_data() )
+    M.apply_U( self, _k, o_, t_ )
+return self    end
+
+
+-------------------------------------------------------------------------------------------------
+-- Axiliary
+-------------------------------------------------------------------------------------------------
 m.get_kernal_path = function( d_ ) return d_.category.. '.' ..d_.group.. '.' ..d_.name    end
 
 m.get_cur_data = function(ind_)
