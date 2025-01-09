@@ -132,8 +132,6 @@ M.startup = function()  -- Calls only once
     shdilr.load_list( mC_pthT:gsub('%/','%.'), _aList, 3 )
     _aList = file_get_match_sub( mC_pthC, '^%a.*', '.lua' )
     shdilr.load_list( mC_pthC:gsub('%/','%.'), _aList, 4 )
-
-    Runtime:addEventListener( "key", mLstnr.onEvent_Key )
     
 end
 
@@ -174,15 +172,16 @@ M.init = function()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_checkerboard' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_color_hueSwap' )
+    m.apply_specific_shader( mC_akCate[2], 'kernelF_blur_box' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_pixDot' )
-    m.apply_specific_shader( mC_akCate[4], 'kernelC_fxNoise_lensFlare' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_waterSurface' )
+    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_FX_burnOut' )
     
     m.upd_img( 2, 1 )   -- Trigger textureWrap setting
+    -- Sync Shader Param
 
     ----------------------------------------------------------------------------------------------------
 
@@ -416,13 +415,18 @@ m.upd_img = function( iT_, iI_ ) --@indexType, @indexImage
         maiImgCur[iT_] = iI_
     return true    end
 
-    local _sizeWH = 320
+    -- local _sizeW, _sizeH = 320, 320
+    local _sizeW, _sizeH = 280, 320     -- Debug For Aspect Issues
     maiImgCur[iT_] = iI_
     if maoImage[iT_] then maoImage[iT_].parent:remove( maoImage[iT_] ) end
-    maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeWH, _sizeWH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeWH*.5+32 );
+    maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeW, _sizeH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
+    -- maoImage[iT_] = display.newRect( maoGrp[3+iT_], 0,0, _sizeW, _sizeH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
     
     -- Apply Shader: when Sprite changed
     if iT_ == 2 then    shdilr:bank_apply( maoImage[2], {} ) 
+        mm.set_composite_fill()  
+        shdilr:bank_apply( maoImage[2], {} ) -- Apply Shader: when Noise changed
+        shdilr.sync_refresh( maoImage[2] )
         -- maoImage[iT_]:scale( .5, .5)
     end
 
@@ -440,10 +444,10 @@ mtFn.iptD['2'] = function() mm.go_mode(2) end    --=== Go Mode 2
 mtFn.iptD['3'] = function() mm.go_mode(3) end    --=== Go Mode 3
 mtFn.iptD['4'] = function() mm.go_mode(4) end    --=== Go Mode 4
 
-mtFn.iptU['left'] = function() mm.swap_shader(1) end     --=== Prev Shader
-mtFn.iptU['right'] = function() mm.swap_shader(2) end    --=== Next Shader
-mtFn.iptU['up'] = function()   mm.swap_menu'-' end     --=== Prev Page
-mtFn.iptU['down'] = function() mm.swap_menu'+' end     --=== Next Shader
+mtFn.iptU['left']   = function() mm.swap_shader(1) end     --=== Prev Shader
+mtFn.iptU['right']  = function() mm.swap_shader(2) end    --=== Next Shader
+mtFn.iptU['up']     = function() mm.swap_menu'-' end     --=== Prev Page
+mtFn.iptU['down']   = function() mm.swap_menu'+' end     --=== Next Shader
 
 mtFn.iptU['w'] = function() mm.swap_img('prev',1) end    --=== Prev Background
 mtFn.iptU['s'] = function() mm.swap_img('next',1) end    --=== Next Background
@@ -520,7 +524,7 @@ mm.slider_percent_to_value = function( i_, d_, fV_ ) --@Index, @fPercentage
     local _fTick = (_tVD.max - _tVD.min) / 100
     local _value = fV_ * _fTick + _tVD.min
     mtoTextVD.tVD_float[i_].text = _value
-     
+
     if mtShdrData_cur.dataType == 'TypD_Uniform' then  
         d_.adToShdr[_tVD.iMat4][_tVD.iArr] = _value
         shdilr.sync_param( maoImage[2], { [ d_.aName[_tVD.iMat4] ]= d_.adToShdr[_tVD.iMat4] } )
@@ -528,8 +532,11 @@ mm.slider_percent_to_value = function( i_, d_, fV_ ) --@Index, @fPercentage
     elseif mtShdrData_cur.dataType == 'TypD_Vertex' then    
         shdilr.sync_param( maoImage[2], { [_tVD.name]= _value } )
     end
-    
 end
+
+
+
+
 
 ----------------------------------------------------------------------------------------------------
 -- Listener
@@ -617,7 +624,7 @@ M.startup()
 M.init()
 
 Runtime:addEventListener( "mouse", onMouseEvent )
-
+Runtime:addEventListener( "key", mLstnr.onEvent_Key )
 ----------------------------------------------------------------------------------------------------
 
 return M

@@ -14,7 +14,7 @@
 local kernel = {}
 
 kernel.language = "glsl"
-kernel.category = "composite"
+kernel.category = "filter"
 kernel.group = "fxNoise"
 kernel.name = "lensFlare"
 
@@ -60,7 +60,7 @@ kernel.fragment = [[
 //----------------------------------------------
 
 //uniform sampler2D SCREEN_TEXTURE;  CoronaSampler0
-//uniform sampler2D Texture_Noise; CoronaSampler1
+uniform sampler2D Texture_Noise; //CoronaSampler0
 
 
 uniform mat4 u_UserData0; // uniSetting
@@ -69,24 +69,18 @@ vec3 iMouse = u_UserData0[0].xyz;
 vec3 Col_Tint = u_UserData0[1].rgb;
 vec2 Pos_Sun = u_UserData0[2].xy;
 
-
-//vec3 iMouse = vec3(.5);
-
 //vec3 Col_Tint = vec3(1.4,1.2,1.0);
-
-
-
 
 //----------------------------------------------
 
 float noise_float(float t, vec2 texResolution)
 {
-    return texture2D(CoronaSampler1,vec2(t,0.0)/texResolution).x;
+    return texture2D(Texture_Noise,vec2(t,0.0)/texResolution).x;
 }
 
 float noise_vec2(vec2 t, vec2 texResolution)
 {
-    return texture2D(CoronaSampler1,t/texResolution).x;
+    return texture2D(Texture_Noise,t/texResolution).x;
 }
 
 vec3 lensflare(vec2 uv,vec2 pos, vec2 texResolution)
@@ -106,11 +100,11 @@ vec3 lensflare(vec2 uv,vec2 pos, vec2 texResolution)
     
     float f1 = max(0.01-pow(length(uv+1.2*pos),1.9),.0)*7.0;
 
-    float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*0.25;
-    float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*0.23;
-    float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*0.21;
+    float f2 = max(1.0/(1.0+32.0*pow(length(uvd+0.8*pos),2.0)),.0)*.725;
+    float f22 = max(1.0/(1.0+32.0*pow(length(uvd+0.85*pos),2.0)),.0)*.723;
+    float f23 = max(1.0/(1.0+32.0*pow(length(uvd+0.9*pos),2.0)),.0)*.721;
     
-    vec2 uvx = mix(uv,uvd,-0.5);
+    vec2 uvx = mix(uv,uvd,-.5);
     
     float f4 = max(0.01-pow(length(uvx+0.4*pos),2.4),.0)*6.0;
     float f42 = max(0.01-pow(length(uvx+0.45*pos),2.4),.0)*5.0;
@@ -118,15 +112,15 @@ vec3 lensflare(vec2 uv,vec2 pos, vec2 texResolution)
     
     uvx = mix(uv,uvd,-.4);
     
-    float f5 = max(0.01-pow(length(uvx+0.2*pos),5.5),.0)*2.0;
-    float f52 = max(0.01-pow(length(uvx+0.4*pos),5.5),.0)*2.0;
-    float f53 = max(0.01-pow(length(uvx+0.6*pos),5.5),.0)*2.0;
+    float f5 = max(0.01-pow(length(uvx+0.2*pos),5.5),.0)*20.0;
+    float f52 = max(0.01-pow(length(uvx+0.4*pos),5.5),.0)*20.0;
+    float f53 = max(0.01-pow(length(uvx+0.6*pos),5.5),.0)*20.0;
     
-    uvx = mix(uv,uvd,-0.5);
+    uvx = mix(uv,uvd,-.015);
     
-    float f6 = max(0.01-pow(length(uvx-0.3*pos),1.6),.0)*6.0;
-    float f62 = max(0.01-pow(length(uvx-0.325*pos),1.6),.0)*3.0;
-    float f63 = max(0.01-pow(length(uvx-0.35*pos),1.6),.0)*5.0;
+    float f6 = max(0.01-pow(length(uvx-0.3*pos),1.6),.0)*60.0;
+    float f62 = max(0.01-pow(length(uvx-0.325*pos),1.6),.0)*30.0;
+    float f63 = max(0.01-pow(length(uvx-0.35*pos),1.6),.0)*50.0;
     
     vec3 c = vec3(.0);
     
@@ -157,30 +151,26 @@ float iTime = CoronaTotalTime;
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
     
-    vec2 FRAGCOORD = UV * iResolution;
-    //vec2 texResolution = 1.0 / TEXTURE_PIXEL_SIZE;
     vec2 texResolution = Pos_Sun;
     P_UV vec2 fragCoord = ( UV / CoronaVertexUserData.xy );
     //----------------------------------------------
 
-    //vec2 uv = fragCoord.xy / iResolution.xy - 0.5;
     vec2 uv = UV - 0.5;
-    //vec2 uv = UV *= .5;
-    //uv = UV - 0.5;
+    uv *= 1.5; // Scale
 
     uv.x *= iResolution.x/iResolution.y; //fix aspect ratio
     vec3 mouse = vec3(iMouse.xy/iResolution.xy ,iMouse.z);
     mouse.x *= iResolution.x/iResolution.y; //fix aspect ratio
     if (iMouse.z<.5)
     {
-        mouse.x=sin(iTime)*.5;
-        mouse.y=sin(iTime*.913)*.5;
+        //mouse.x=sin(iTime)*.5;
+        //mouse.y=sin(iTime*.913)*.5;
+        mouse.x=sin(iTime)*1.3;
+        mouse.y=sin(iTime*.713)*.3;
     }
     
-    //vec3 color = vec3(1.4,1.2,1.0)*lensflare(uv,mouse.xy);
     vec3 color = vec3(1.4,1.2,1.0)*lensflare(uv, mouse.xy, texResolution);
-    //color -= noise_vec2(fragCoord.xy)*.015;
-    color -= noise_vec2(fragCoord.xy, texResolution)*.015;
+    color -= noise_vec2(fragCoord.xy, texResolution)*.15;
     color = cc(color,.5,.1);
     COLOR = vec4(color,1.0);
 

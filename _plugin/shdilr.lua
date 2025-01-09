@@ -21,6 +21,8 @@ local M,m,mtFn = {},{},{}
 ----------------------------------------------------------------------------------------------------
 local maRegi = {}
 local moLast -- The last object which applied effect
+local mtLastParam
+
 
 -- DevTest
 local maaList = {}          -- ArrayArray: List
@@ -83,8 +85,18 @@ return self    end
 
 M.sync_param = function( o_, t_ )  --@kShd, @oImg, @tOpt
     assert( o_.fill.effect, "o_.fill.effect is nil!")
+    mtLastParam = t_
     for k,v in next, t_ do    o_.fill.effect[k] = v end
 end
+
+M.sync_refresh = function( o_ )  --@kShd, @oImg, @tOpt
+    -- assert( o_.fill.effect, "o_.fill.effect is nil!")
+    if not mtLastParam then return    end
+    if not o_.fill.effect then return    end
+    local _t = mtLastParam
+    for k,v in next, _t do    o_.fill.effect[k] = v end
+end
+
 
 --=== Set Vertext Data
 M.effect_off = function( o_ )    o_.fill.effect = nil end

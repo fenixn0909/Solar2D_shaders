@@ -10,7 +10,7 @@
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "generator"
-kernel.group = "FX"
+kernel.group = "Lit"
 kernel.name = "vignette"
 
 kernel.isTimeDependent = true
