@@ -137,12 +137,12 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     float aspect = 320./280.;
     //----------------------------------------------
     
-
+    // Testing
     //if( gl_FragCoord.x == gl_FragCoord.y ){
     //if( chk > 0 ){
     if( CoronaContentScale.x == CoronaContentScale.y ){
     //if( CoronaTexelSize.x == CoronaTexelSize.y ){
-        return CoronaColorScale( vec4(1,0,0,1) );
+        //return CoronaColorScale( vec4(1,0,0,1) );
     }
 
     vec2 uv = UV;

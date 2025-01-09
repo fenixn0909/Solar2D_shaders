@@ -172,10 +172,10 @@ M.init = function()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
-    m.apply_specific_shader( mC_akCate[2], 'kernelF_blur_box' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_blur_box' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_waterSurface' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_FX_burnOut' )
