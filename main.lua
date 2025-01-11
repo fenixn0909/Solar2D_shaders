@@ -51,14 +51,15 @@ local mC_pthF = "_shader/filter/"
 local mC_pthT = "_shader/filter_trans/"
 local mC_pthC = "_shader/composite/"
 
-local mC_nParam = 32
+local mC_nMaxParams = 32
+local mC_aRectSize = { 280, 320 } -- None square for aspect debuging  { 320, 320 }
 ----------------------------------------------------------------------------------------------------
 display.setStatusBar( display.HiddenStatusBar )
 -- display.setDefault( "textureWrapX", "repeat" )
 -- display.setDefault( "textureWrapY", "repeat" )
 ----------------------------------------------------------------------------------------------------
 local shdilr = require( "_plugin.shdilr" )
-local inspect = require( "_plugin.inspect" ) -- Debug
+local inspect = require( "_plugin.inspect" ) -- Using only for Debuging
 local widget = require( "widget" )
 widget.setTheme( "widget_theme_android_holo_light" ) -- 'widget_theme_android_holo_dark', 'widget_theme_ios7'
 ----------------------------------------------------------------------------------------------------
@@ -86,7 +87,7 @@ local function new_deep_copy( copy_ )    if( type(copy_) ~= "table" ) then  retu
 return _paste    end
 
 ----------------------------------------------------------------------------------------------------
---=== Image
+--=== Page
 local mtiPage = { pgPrama= 1, pgTexture= 2, pgFile= 3 }
 
 --=== Image
@@ -172,10 +173,11 @@ M.init = function()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stars' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
-    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_blur_box' )
+    m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_float' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_waterSurface' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_FX_burnOut' )
@@ -218,7 +220,7 @@ m.init_textParam_VD = function( grp_, toText_ )
     toText_.tVD_name = {}
     toText_.tVD_float = {}
 
-    for i=1,mC_nParam do
+    for i=1,mC_nMaxParams do
         toText_.tVD_name[i]  =  display.newText{ align= 'left', x= _vDbX, y= _vDbY + _vDdY*(i-1),        fontSize= 16, text= 'name', font=  native.systemFont };  toText_.tVD_name[i].anchorX = 0
         toText_.tVD_float[i] =  display.newText{ align= 'left', x= _vDbX+_vDdX, y= _vDbY + _vDdY*(i-1),  fontSize= 16, text= 'flaot', font=  native.systemFont };  toText_.tVD_float[i].anchorX = 0
         grp_:insert( toText_.tVD_name[i] )
@@ -233,7 +235,7 @@ m.init_slider = function( grp_, aoSlider_, aLstnr_ )
     local _bY = 16
     local _dY = 32
 
-    for i=1,mC_nParam do
+    for i=1,mC_nMaxParams do
         aoSlider_[i] = widget.newSlider({
             x= _bX, y= _bY+_dY*(i-1), width = 100, listener = aLstnr_[i],
             value= 0,  -- Start slider at 10% (optional)
@@ -391,7 +393,7 @@ m.upd_UI = function( d_, toText_ )
     -- error( "_aD: "..inspect(_aD) )
 
     --=== VertexData Texts & Sliders Visible
-    for i=1,mC_nParam do
+    for i=1,mC_nMaxParams do
         toggle_visible( false, toText_.tVD_name[i], toText_.tVD_float[i], maoSlider[i] )
         if _aD[i] then 
             if _aD[i].name == '' then  -- Keep hiding param UI
@@ -415,8 +417,8 @@ m.upd_img = function( iT_, iI_ ) --@indexType, @indexImage
         maiImgCur[iT_] = iI_
     return true    end
 
-    -- local _sizeW, _sizeH = 320, 320
-    local _sizeW, _sizeH = 280, 320     -- Debug For Aspect Issues
+
+    local _sizeW, _sizeH = mC_aRectSize[1], mC_aRectSize[2]
     maiImgCur[iT_] = iI_
     if maoImage[iT_] then maoImage[iT_].parent:remove( maoImage[iT_] ) end
     maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeW, _sizeH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
@@ -543,7 +545,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 mLstnr.aVD_slider = {}
-for i=1,mC_nParam do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, mtShdrData_cur, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
+for i=1,mC_nMaxParams do    mLstnr.aVD_slider[i] = function( e_ ) mm.slider_percent_to_value( i, mtShdrData_cur, e_.value )     end end -- print( "Slider "..i.. "at " .. e_.value .. "%" )
 
 mLstnr.aPage_switch = {}
 for i=1,3 do    mLstnr.aPage_switch[i] = function( e_ ) mm.trig_switch(i)     end end -- print("e_.target.id: "..e_.target.id)

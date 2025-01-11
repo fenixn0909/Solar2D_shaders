@@ -9,11 +9,11 @@
     ✳️　>> Call set_comp_fill() before using Composite Shader <<
     ✳️ c_xxx: chaining call
     ✳️ the purpose of "chaning call" is only for joint multiple lines into one, make code cleaner and easier for comment out.
-
+    
 --]]
 
 
-local a_val2ind = function( a_, k_ ) for i=1, #a_ do    if a_[i] == k_ then return i end   end end   --@Array Value to Index 
+local a_val2idx = function( a_, k_ ) for i=1, #a_ do    if a_[i] == k_ then return i end   end end   --@Array Value to Index 
 ----------------------------------------------------------------------------------------------------
 local M,m,mtFn = {},{},{}
 ----------------------------------------------------------------------------------------------------
@@ -23,13 +23,11 @@ local maRegi = {}
 local moLast -- The last object which applied effect
 local mtLastParam
 
-
 -- DevTest
 local maaList = {}          -- ArrayArray: List
 local madShdr = {}          -- ArrayData: Shader file 
 local miUN_cur = 1          -- cur mIndexUnion: ShaderData Union < Group >
 local miBF_cur              -- cur mIndexBankFile
-
 
 ----------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -97,7 +95,6 @@ M.sync_refresh = function( o_ )  --@kShd, @oImg, @tOpt
     for k,v in next, _t do    o_.fill.effect[k] = v end
 end
 
-
 --=== Set Vertext Data
 M.effect_off = function( o_ )    o_.fill.effect = nil end
 
@@ -131,7 +128,7 @@ M.logic_tween = function()
 end
 
 -------------------------------------------------------------------------------------------------
---=== Auxiliary
+--=== Auxiliary <Public>
 -------------------------------------------------------------------------------------------------
 M.end_chain = function()  moLast = nil end
 M.cleanup_register = function()    maRegi = {} end
@@ -159,7 +156,7 @@ M.bank_set_iBF = function( i_ )     assert( i_>0, "i_ must > 0")    assert( i_<=
 end
 
 M.bank_set_iBF_byKey = function( k_ )
-    local _iUN = a_val2ind( maaList[miUN_cur],  k_ )  assert( _iUN, "no key found: "..k_)
+    local _iUN = a_val2idx( maaList[miUN_cur],  k_ )  assert( _iUN, "no key found: "..k_)
     miBF_cur = _iUN
 end
 
@@ -227,7 +224,7 @@ return self    end
 
 
 -------------------------------------------------------------------------------------------------
--- Axiliary
+-- Axiliary <Private>
 -------------------------------------------------------------------------------------------------
 m.get_kernal_path = function( d_ ) return d_.category.. '.' ..d_.group.. '.' ..d_.name    end
 

@@ -140,9 +140,12 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     // Testing
     //if( gl_FragCoord.x == gl_FragCoord.y ){
     //if( chk > 0 ){
-    if( CoronaContentScale.x == CoronaContentScale.y ){
+    //if( CoronaContentScale.x == CoronaContentScale.y ){
+    //if( CoronaContentScale.y == 0.46875 ){
+    if( CoronaTexelSize.x == .0009765625582 ){
+    //if( CoronaTexelSize.z == .0009765625582 ){
     //if( CoronaTexelSize.x == CoronaTexelSize.y ){
-        //return CoronaColorScale( vec4(1,0,0,1) );
+        return CoronaColorScale( vec4(1,0,0,1) );
     }
 
     vec2 uv = UV;
