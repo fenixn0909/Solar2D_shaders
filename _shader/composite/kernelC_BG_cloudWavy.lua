@@ -3,6 +3,8 @@
 
   https://www.shadertoy.com/view/3dBcR1
 
+  # This shader take 2 noise textures
+
 --]]
 
 
@@ -13,8 +15,10 @@ kernel.category = "composite"
 kernel.group = "BG"
 kernel.name = "cloudWavy" -- Use 2 cloud texture
 
-
 kernel.isTimeDependent = true
+
+kernel.textureWrap = 'repeat'
+
 
 kernel.vertexData =
 {
@@ -34,12 +38,24 @@ kernel.vertexData =
   },
 }
 
+kernel.vertexData =
+{
+  { name = "ResX",     default = 1, min = 0.001, max = 10, index = 0, },
+  { name = "ResY",    default =  1, min = 0.001, max = 10, index = 1, },
+  { name = "Frames",    default = 10, min = 0, max = 100, index = 2, },
+} 
+
+
 
 kernel.fragment =
 [[
-P_DEFAULT float resolutionX = CoronaVertexUserData.x;
-P_DEFAULT float resolutionY = CoronaVertexUserData.y;
-P_UV vec2 iResolution = vec2(resolutionX,resolutionY);
+
+
+float ResX = CoronaVertexUserData.x;
+float ResY = CoronaVertexUserData.y;
+
+P_UV vec2 iResolution = vec2( ResX, ResY );
+
 //----------------------------------------------
 
 #define TIME_FACTOR .001  // .1
@@ -56,6 +72,7 @@ P_UV vec2 iResolution = vec2(resolutionX,resolutionY);
 
 const float div = 1. / (float(LAYERS) * ROUGHNESS);
 
+//----------------------------------------------
 float FractalCloud(vec2 position, vec2 delta)
 {
     float step = DISTANCE;
@@ -90,13 +107,19 @@ float CloudMask(vec2 position, vec2 delta)
   return p;
 }
 
+//----------------------------------------------
 
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 COLOR = vec4(0);
+//P_UV vec2 iResolution = 1.0 / CoronaTexelSize.zw;
+
+
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_UV vec2 fragCoord = texCoord / iResolution;
-  P_COLOR vec4 COLOR;
-  //P_DEFAULT float iTime = CoronaTotalTime;
-  P_DEFAULT float iTime = sin(CoronaTotalTime*0.1)*1000;
+  
+  P_UV vec2 fragCoord = UV / iResolution;
+
+  P_DEFAULT float iTime = CoronaTotalTime * 100;
+  //P_DEFAULT float iTime = sin(CoronaTotalTime*0.1)*1000;
   //P_DEFAULT float alpha = abs(sin(CoronaTotalTime)) -0.15;
   //----------------------------------------------
   
@@ -128,7 +151,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 
   //----------------------------------------------
   
-  COLOR =  vec4(mix(
+  COLOR = vec4(mix(
         mix(SKY_COLOR, CLOUD_COLOR, smoothstep(0.,1.,light)), 
         CLOUD_DARK_COLOR, smoothstep(0.,1.,dark)),
         1.);

@@ -17,6 +17,7 @@ kernel.group = "wobble"
 kernel.name = "waterSurface"
 
 kernel.isTimeDependent = true
+kernel.textureWrap = 'repeat'
 
 
 

@@ -169,12 +169,12 @@ M.init = function()
     toggle_visible( false, maoGrp[2], maoGrp[3])
 
     --=== Apply Shader Or ......
-    -- m.apply_bank_shader()
+    m.apply_bank_shader()
 
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
-    m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stars' )
+    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stars' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_crt' )
@@ -182,7 +182,8 @@ M.init = function()
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_wavingParticles' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_waterSurface' )
-    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_FX_burnOut' )
+    -- m.apply_specific_shader( mC_akCate[3], 'kernelF_trans_pageScroll' )
+    -- m.apply_specific_shader( mC_akCate[4], 'kernelC_color_corruption' )
     
     m.upd_img( 2, 1 )   -- Trigger textureWrap setting
     

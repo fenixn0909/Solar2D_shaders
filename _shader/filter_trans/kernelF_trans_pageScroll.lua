@@ -31,55 +31,6 @@ kernel.vertexData =
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 kernel.fragment =
 [[
 P_DEFAULT float progress = CoronaVertexUserData.x;
@@ -202,13 +153,14 @@ vec4 behindSurface(vec2 p, float yc, vec3 point, mat3 rrotation)
 
 //----------------------------------------------
 
+P_COLOR vec4 COLOR = vec4(0);
+
+
 P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
 {
-    P_UV vec2 UV = texCoord;
-    P_COLOR vec4 COLOR;
-    float p = UV;
+    P_UV vec2 p = texCoord;
 
-    progress = abs(sin(CoronaTotalTime));
+    //progress = abs(sin(CoronaTotalTime));
     //----------------------------------------------
 
     const float angle = 100.0 * PI / 180.0;
@@ -235,7 +187,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
     {
           // Behind surface
           //return behindSurface(p,yc, point, rrotation);
-          return CoronaColorScale( behindSurface(p,yc, point, rrotation );
+          return CoronaColorScale( behindSurface(p,yc, point, rrotation )) ;
     }
 
     if (yc > cylinderRadius)
@@ -285,10 +237,10 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
     //return antiAlias(color, cl, dist);
 
     //----------------------------------------------
-    COLOR = antiAlias(color, cl, dist);
+    //COLOR = antiAlias(color, cl, dist);
 
-    return CoronaColorScale( antiAlias(color, cl, dist) );
-    //return CoronaColorScale( COLOR );
+    //return CoronaColorScale( antiAlias(color, cl, dist) );
+    return CoronaColorScale( COLOR );
 
 }
 ]]

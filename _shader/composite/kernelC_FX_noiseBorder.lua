@@ -15,33 +15,29 @@ kernel.name = "noiseBorder"
 
 kernel.isTimeDependent = true
 
+kernel.textureWrap = 'repeat'
+
 kernel.vertexData =
 {
-  {
-    name = 'intensity',
-    default = 0.0,
-    min = 0,
-    max = 10,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  
-}
+  { name = "Radius",     default = 0.516459, min = 0, max = 1, index = 0, },
+  { name = "EffectCon",  default =  .4309, min = 0, max = 1, index = 1, },
+  { name = "BurnSpeed",      default = 0.3076, min = 0, max = 1, index = 2, },
+  { name = "Shape",      default = 0.5, min = 0, max = 1, index = 3, },
+} 
 
 
 kernel.fragment =
 [[
 
+float Radius = CoronaVertexUserData.x;
+float EffectCon = CoronaVertexUserData.y;
+float BurnSpeed = CoronaVertexUserData.z;    // vec2(0,0.2): rise, vec2(1,-.1): left lines
+float Shape = CoronaVertexUserData.w;
+//----------------------------------------------
+
 uniform sampler2D TEXTURE;
 // uniform sampler2D textureNoise; // CoronaSampler1
 
-
-uniform float radius = 0.516459;   //: hint_range(0.0, 1.0) 
-uniform float effectControl = .4309;    //: hint_range(0.0, 1.0) 
-uniform float burnSpeed = 0.3076;    //: hint_range(0.0, 1.0) 
-uniform float shape = .50;  //: hint_range(0.0, 1.0) 
-
-
-//----------------------------------------------
 
 //----------------------------------------------
 
@@ -56,17 +52,17 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
     vec2 centerDistVec = vec2(0.5) - UV;
         
-    float distToCircleEdge = length(centerDistVec) * radius;
+    float distToCircleEdge = length(centerDistVec) * Radius;
     float distToSquareEdge = 0.5*(0.5 - min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y)));
-    float distToEdge = mix(distToCircleEdge,distToSquareEdge,shape);
+    float distToEdge = mix(distToCircleEdge,distToSquareEdge,Shape);
 
-    float gradient = smoothstep(0.5, 0.5 - radius, distToEdge);
+    float gradient = smoothstep(0.5, 0.5 - Radius, distToEdge);
 
-    vec2 direction = vec2(0, 1) * burnSpeed;
+    vec2 direction = vec2(0, 1) * BurnSpeed;
     //float noiseValue = texture2D(textureNoise, UV + direction * TIME).r;
     float noiseValue = texture2D(CoronaSampler1, UV + direction * TIME).r;
 
-    float opacity = step(radius, mix(gradient, noiseValue, effectControl) - distToEdge);
+    float opacity = step(Radius, mix(gradient, noiseValue, EffectCon) - distToEdge);
 
     COLOR = texture2D(TEXTURE, UV) * vec4(1.0, 1.0, 1.0, opacity);
 
