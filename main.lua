@@ -174,16 +174,18 @@ M.init = function()
     --=== Apply Specific Shader by Category and Filename
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_aTest' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_Lit_vignetteN' )
-    -- m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stars' )
+    m.apply_specific_shader( mC_akCate[1], 'kernelG_BG_stars' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_FX_energyBeam' )
     -- m.apply_specific_shader( mC_akCate[1], 'kernelG_water_windWalk2D' )
-    m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_float' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_crt' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_float' )
+    -- m.apply_specific_shader( mC_akCate[2], 'kernelF_FX_wavingParticles' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_deform_perspective' )
     -- m.apply_specific_shader( mC_akCate[2], 'kernelF_wobble_waterSurface' )
     -- m.apply_specific_shader( mC_akCate[4], 'kernelC_FX_burnOut' )
     
     m.upd_img( 2, 1 )   -- Trigger textureWrap setting
-    -- Sync Shader Param
+    
 
     ----------------------------------------------------------------------------------------------------
 
@@ -422,6 +424,7 @@ m.upd_img = function( iT_, iI_ ) --@indexType, @indexImage
     maiImgCur[iT_] = iI_
     if maoImage[iT_] then maoImage[iT_].parent:remove( maoImage[iT_] ) end
     maoImage[iT_] = display.newImageRect( maoGrp[3+iT_], mC_pthFldr..mC_aaImgFN[iT_][iI_], _sizeW, _sizeH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
+    -- maoImage[iT_] = display.newCircle( maoGrp[3+iT_], 0,0, 100 ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
     -- maoImage[iT_] = display.newRect( maoGrp[3+iT_], 0,0, _sizeW, _sizeH ); maoImage[iT_]:translate( SCRN_DCX, SCRN_DSOY + _sizeH*.5+32 );
     
     -- Apply Shader: when Sprite changed

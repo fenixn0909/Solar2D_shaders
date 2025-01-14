@@ -83,23 +83,11 @@ kernel.uniformData =
 }
 
 
-kernel.vertex =
-[[
-
-varying float chk = 0.;
-varying vec2 Texel_Size = CoronaTexelSize.zw;
-
-P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
-{
-    return position;
-}
-]]
 
 kernel.fragment =
 [[
 
 varying float chk;
-varying vec2 Texel_Size;
 
 //----------------------------------------------
 uniform mat4 u_UserData0; // uniSetting
@@ -124,9 +112,6 @@ float Flick = u_UserData0[0][1];
 float Flick_Speed = u_UserData0[0][2];
 float Aspect_Y = u_UserData0[0][3];
 
-//Viewport( 0, 0, 240, 240);
-//DepthRangef( 0, 1);
-
 //----------------------------------------------
 float TIME = CoronaTotalTime;
 vec2 iResolution = 1.0 / CoronaTexelSize.zw;
@@ -134,25 +119,10 @@ P_COLOR vec4 COLOR = vec4(1);
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-    float aspect = 320./280.;
-    //----------------------------------------------
     
-    // Testing
-    //if( gl_FragCoord.x == gl_FragCoord.y ){
-    //if( chk > 0 ){
-    //if( CoronaContentScale.x == CoronaContentScale.y ){
-    //if( CoronaContentScale.y == 0.46875 ){
-    if( CoronaTexelSize.x == .0009765625582 ){
-    //if( CoronaTexelSize.z == .0009765625582 ){
-    //if( CoronaTexelSize.x == CoronaTexelSize.y ){
-        return CoronaColorScale( vec4(1,0,0,1) );
-    }
-
     vec2 uv = UV;
-    //uv.y *= Texel_Size.y / Texel_Size.x;
-    uv.x *= CoronaContentScale.x / CoronaContentScale.y;
-    //uv.y *= Aspect_Y;
-
+    uv.y *= Aspect_Y;
+    //----------------------------------------------
 
     vec4 finColor = vec4(0);
     for(int i=0; i < int(Num_Lit); i++){

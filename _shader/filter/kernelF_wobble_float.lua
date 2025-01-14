@@ -25,7 +25,7 @@ kernel.uniformData =
         name = "uniSetting",
         paramName = {
             'Speed_X', 'Speed_Y', 'Sine_AmpX','Sine_AmpY',
-            'Quantize_To', 'fIs_Do_Abs', 'fIs_Do_Quantize','',
+            'Quantize_To', 'fIs_Do_Abs', 'fIs_Do_Quantize','DEBUG',
             '','','','',
             '','','','',
         },
@@ -37,13 +37,13 @@ kernel.uniformData =
         },
         min = {
             .0,  .0, .0, .0,
-            .1, .0, .0, 0.01,
+            .1, .0, .0, -1000,
             .0, .0, .001, 0.01,
             .0, .0, .001, 0.01,
         },
         max = {
             50.0, 50.0, 50.0, 50.0,
-            20.0, 1.0, 1.0, .5,
+            20.0, 1.0, 1.0, 1000,
             1.0, 1.0, 1.0, .5,
             1.0, 1.0, 1.0, .5,
 
@@ -65,6 +65,7 @@ float Sine_AmpY = u_UserData0[0][3];
 float Quantize_To = u_UserData0[1][0];
 float fIs_Do_Abs = u_UserData0[1][1];
 float fIs_Do_Quantize = u_UserData0[1][2];
+float DEBUG = u_UserData0[1][3];
 //-----------------------------------------------
 
 vec2 Sine_Amp = vec2(Sine_AmpX, Sine_AmpY);
@@ -97,6 +98,17 @@ P_POSITION vec2 VertexKernel( P_POSITION vec2 position )
         VERTEX.y = round(VERTEX.y / Quantize_To);
         VERTEX *= Quantize_To;
     }
+
+    //if( position.x <= position.y ){
+    //if( position.x <= DEBUG ){
+    if( position.x <= position.y + DEBUG ){
+        VERTEX.x -= position.y+ DEBUG;
+        //VERTEX.x = -20;
+        //VERTEX.x = position.x;
+        //VERTEX.x = position.x + 20;
+    }
+
+    VERTEX.x += position.y+ DEBUG;
 
     return VERTEX;
 

@@ -15,7 +15,7 @@ kernel.name = "test"
 kernel.graph = 
 {
         nodes = {
-                horizontal      =       { effect= 'generator.BG.cloudMotion', input1= 'paint1' },
+                horizontal      =       { effect= 'generator.cloud.motionPF', input1= 'paint1' },
                 vertical        =       { effect= 'generator.FG.fancyBling', input1= 'horizontal' },
         },
         -- output =  'horizontal',
