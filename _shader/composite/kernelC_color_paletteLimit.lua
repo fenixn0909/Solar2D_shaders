@@ -15,7 +15,7 @@ kernel.name = "paletteLimit"
 
 kernel.vertexData =
 {
-  { name = "NumCol",     default = 16, min = 2, max = 32, index = 0, },
+  { name = "NumCol",     default = 16, min = 2, max = 256, index = 0, },
 } 
 
 
@@ -26,6 +26,7 @@ uniform sampler2D TEXTURE;         // CoronaSampler0
 //uniform sampler2D PALETTE_TEXTURE; // CoronaSampler1
 
 float NumCol = CoronaVertexUserData.x;
+
 
 int I_NumCol = int( NumCol ); // : hint_range(2,16) 
 

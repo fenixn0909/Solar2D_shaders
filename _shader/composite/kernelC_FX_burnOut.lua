@@ -9,7 +9,6 @@
 --]]
 
 
-
 local kernel = {}
 kernel.language = "glsl"
 kernel.category = "composite"
@@ -21,33 +20,20 @@ kernel.isTimeDependent = true
 
 kernel.vertexData =
 {
-  {
-    name = "Progress",
-    default = .5,
-    min = 0,
-    max = 1,
-    index = 0, 
-  },
-  {
-    name = "resolutionY",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 1, 
-  },
-}
+    { name = "Progress",  default = .5, min = 0, max = 1, index = 0, },
+    { name = "Burn_Size",  default = .51, min = 0, max = 10, index = 1, },
+} 
 
 
 kernel.fragment =
 [[
 
-
 float Progress = CoronaVertexUserData.x;
-
+float Burn_Size = CoronaVertexUserData.y;
 
 //----------------------------------------------
 
-float Burn_Size = .51;// : hint_range(0.0, 1.0, 0.01) 火焰大小
+//float Burn_Size = .51;// : hint_range(0.0, 1.0, 0.01) 火焰大小
 vec4 Col_Ash = vec4(0,0,0, .0);// : source_color 灰烬颜色
 vec4 burn_color = vec4(0.882, 0.777, 0.169 , 0.0);// : source_color 燃烧颜色
 vec4 Col_Proburn = vec4(0.804, 0.2, 0.093 , 1.0);// : source_color 超级燃烧颜色

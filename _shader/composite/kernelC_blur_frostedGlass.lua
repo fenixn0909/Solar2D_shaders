@@ -17,29 +17,32 @@ kernel.isTimeDependent = true
 kernel.vertexData =
 {
   {
-    name = 'intensity',
+    name = 'Intensity',
     default = 0.0,
     min = 0,
-    max = 10,
+    max = 0.3,
     index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
   },
   
 }
 
+kernel.vertexData =
+{
+    { name = "Speed",  default = 2.5, min = -15, max = 15, index = 0, },
+    { name = "Range",  default = .3, min = -1, max = 1, index = 1, },
+    { name = "Intensity",  default = .1, min = 0, max = .3, index = 2, },
+    { name = "Tint_Amount",  default = .4, min = 0, max = 1, index = 3, },
+} 
 
 kernel.fragment =
 [[
 
-float intensity = CoronaVertexUserData.x; //: hint_range(0.0, 0.3)
+float Speed = CoronaVertexUserData.x; 
+float Range = CoronaVertexUserData.y; 
+float Intensity = CoronaVertexUserData.z; 
+float Tint_Amount = CoronaVertexUserData.w; 
 
-//uniform sampler2D screen_texture: hint_screen_texture, repeat_disable, filter_nearest_mipmap;  // mipmap is neaded for textureLod
-//uniform sampler2D warp_texture: repeat_enable; // works better as a normal with warping
-// warp_texture: CoronaSampler1 
-
-//uniform float intensity = -.1; //: hint_range(0.0, 0.3)
-//float intensity = -.1; //: hint_range(0.0, 0.3)
-uniform vec4 tint_color = vec4(0.5, 0.6, 0.9, 0.0); //: source_color
-uniform float tint_amount = 0.4; //: hint_range(0.0, 1.0)
+vec4 tint_color = vec4(0.3, 0.7, 0.9, 1.0); //: source_color
 
 //----------------------------------------------
 
@@ -54,21 +57,24 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 
     //----------------------------------------------
 
-    vec2 warp = texture2D( CoronaSampler1, UV ).xy - 0.5;                         // get our normal warp
-    vec4 screen = texture2D( CoronaSampler0, UV + warp * intensity, intensity * 4.0);                           // sample based on warp and intensity and blur based on intensity
+    vec2 warp = texture2D( CoronaSampler1, UV ).xy - 0.5;
+    warp.x += sin(TIME*Speed) * Range;
+    warp.y += cos(TIME*Speed) * Range;
+                             // get our normal warp
+    vec4 screen = texture2D( CoronaSampler0, UV + warp * Intensity);                           // sample based on warp and Intensity and blur based on Intensity
     float alpha = screen.a;
-    //vec4 screen = textureLod(screen_texture, UV + warp * intensity, intensity * 4.0);                           // sample based on warp and intensity and blur based on intensity
     
-    screen = mix(screen, tint_color, tint_amount);                          // tint our image
+    screen = mix(screen, tint_color, Tint_Amount);                          // tint our image
     float noise = fract(sin(dot(UV, vec2(12.9898, 78.233))) * 43758.5453);                          // get a random-ish value for some speckle noise
     float diff = max(dot(warp, normalize(vec2(1.0, 1.0))), 0.0);                            // light diffusion for glass shape highlights
-    screen += diff * intensity;                         // apply diffusion based on intensity
+    screen += diff * Intensity;                         // apply diffusion based on Intensity
     
-    screen += noise * intensity; // apply speckle noise based on intensity
+    screen += noise * Intensity; // apply speckle noise based on Intensity
     
     COLOR = screen;     // yarp
 
     //----------------------------------------------
+    COLOR.a = alpha;
     COLOR.rgb *= alpha;
 
     return CoronaColorScale( COLOR );

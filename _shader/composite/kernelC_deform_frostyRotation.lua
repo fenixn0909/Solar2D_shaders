@@ -4,10 +4,7 @@
     CasualGarageCoder
     December 6, 2022
 
-
-    
 --]]
-
 
 local kernel = {}
 kernel.language = "glsl"
@@ -18,8 +15,6 @@ kernel.name = "frostyRotation"
 kernel.isTimeDependent = true
 
 kernel.textureWrap = 'repeat'
-
-
 
 
 kernel.vertexData =

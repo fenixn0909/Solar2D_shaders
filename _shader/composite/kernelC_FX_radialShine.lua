@@ -1,11 +1,9 @@
  
 --[[
-    https://godotshaders.com/shader/2d-iridescence/
-    erratic_unicorn
-    November 29, 2024
+    https://godotshaders.com/shader/radial-shine-highlight/
+    Josephsmithberger
+    November 20, 2024
 --]]
-
-
 
 local kernel = {}
 kernel.language = "glsl"

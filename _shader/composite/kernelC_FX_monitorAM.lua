@@ -13,32 +13,36 @@ kernel.group = "blur"
 kernel.name = "monitorAM" -- Analog Monochrome Monitor
 
 kernel.isTimeDependent = true
+kernel.textureWrap = 'repeat'
+
+
 
 kernel.vertexData =
 {
-  {
-    name = 'intensity',
-    default = 0.0,
-    min = 0,
-    max = 10,
-    index = 0,    -- v_UserData.x;  use a_UserData.x if #kernel.vertexData == 1 ?
-  },
-  
-}
+    { name = "Mix",           default =  1, min = 0., max = 1, index = 1, },
+    { name = "Pixel_Size",    default = .02, min = 0.005, max = 0.05, index = 2, },
+    { name = "Contrast",      default = .5, min = -1, max = 1, index = 3, },
+} 
+
 
 
 kernel.fragment =
 [[
 
-//uniform sampler2D tiledtexture: repeat_enable, filter_linear_mipmap;    // texture to be used as "pixels"
-//uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;   // grab the camera's view
+float Mix = CoronaVertexUserData.y;
+float Pixel_Size = CoronaVertexUserData.z;
+float Contrast = CoronaVertexUserData.w;  
 
-uniform float opacity = 0.5 ; //: hint_range(0.0, 1.0)  // how much of the tiled texture to show (1 recommended) 
-uniform float pixel_size = 0.01;    // size of pixelation effect
-uniform bool greyscale = false;  // whether to greyscale the image or not before applying tiletexture
-uniform float contrast = 0.5;     // whether to greyscale the image or not before applying tiletexture
-uniform vec3 pixel_colors = vec3( 0.0, 1.0, 0.0 );   // the overriding color of the tiled texture, white by default
-uniform vec3 background_color = vec3( 0.2, 0.7, 0.7 ); // : source_color;   // the overriding color of the background, black by default
+//----------------------------------------------
+
+bool greyscale = false;  // whether to greyscale the image or not before applying tiletexture
+
+//float Mix = 0.5 ; //: hint_range(0.0, 1.0)  // how much of the tiled texture to show (1 recommended) 
+//float Pixel_Size = 0.01;    // size of pixelation effect
+//float Contrast = 0.5;     // whether to greyscale the image or not before applying tiletexture
+
+vec4 Col_Pixel = vec4( 0.6, 1.0, 0.6, 1 );   // the overriding color of the tiled texture, white by default
+vec4 Col_BG = vec4( 0.2, 0.7, 0.7, 1 ); // : source_color;   // the overriding color of the background, black by default
 
 //----------------------------------------------
 
@@ -50,7 +54,7 @@ vec4 to_grayscale(vec4 color) {
 
 // Adjust contrast of the greyscale image
 vec4 adjust_contrast(vec4 color) {
-    color.rgb = (color.rgb - 0.5) * max(contrast, 0.0) + 0.5;
+    color.rgb = (color.rgb - 0.5) * max(Contrast, 0.0) + 0.5;
     return color;
 }
 
@@ -71,13 +75,12 @@ vec4 hard_mix(vec4 color1, vec4 color2) {
 
 //----------------------------------------------
 
-P_COLOR vec4 COLOR;
+P_COLOR vec4 COLOR = vec4(0);
 P_DEFAULT float TIME = CoronaTotalTime; // * speed
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
 
-    //P_UV vec2 SCREEN_UV = gl_FragCoord.xy * CoronaTexelSize.zw;
     P_UV vec2 SCREEN_UV = UV;
 
     //----------------------------------------------
@@ -86,7 +89,7 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     vec2 uv2 = SCREEN_UV;
     
     // apply pixelation on the base texture
-    uv = floor(uv / pixel_size) * pixel_size;
+    uv = floor(uv / Pixel_Size) * Pixel_Size;
     vec4 color1 = texture2D( CoronaSampler0, uv );
     float alpha = color1.a;
 
@@ -97,16 +100,20 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     }
     
     // apply hard mix blending
-    vec4 color2 = texture2D( CoronaSampler1, uv2 / pixel_size );
-    vec4 final_result = mix(color1, hard_mix(color1, color2), opacity);
+    vec4 color2 = texture2D( CoronaSampler1, uv2 / Pixel_Size );
+    vec4 final_result = mix(color1, hard_mix(color1, color2), Mix);
+    //vec4 final_result = mix(color1, hard_mix(color1, Col_Pixel), Mix);
     
     // replace default white with desired color
     if (final_result == vec4(1.0, 1.0, 1.0, 1.0)) {
-        final_result = vec4(pixel_colors, 1.0);
+        //final_result = Col_Pixel;
+        //final_result = mix(final_result, Col_Pixel, sin(mod(TIME,4.) ) );
+        final_result = mix(final_result, Col_Pixel, 1 );
         // replace default black background with desired color
     } else {
         if (final_result == vec4(0.0, 0.0, 0.0, 1.0)) {
-            final_result = vec4(background_color, 1.0);
+            //final_result = Col_BG;
+            
         }
     }
     

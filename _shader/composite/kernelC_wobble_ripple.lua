@@ -15,14 +15,14 @@ kernel.isTimeDependent = true
 kernel.vertexData =
 {
   {
-    name = "strength",
+    name = "Strength",
     default = 0.05,
     min = 0,
     max = 5,
     index = 0,    
   },
   {
-    name = "speed",
+    name = "Speed",
     default = 1,
     min = -360,
     max = 360,     
@@ -37,8 +37,8 @@ kernel.fragment =
 ///sampler2D flowMap; // use CoronaSampler1,  Displacement map
 //----------------------------------------------
 
-float strength = CoronaVertexUserData.x;
-float speed = CoronaVertexUserData.y;
+float Strength = CoronaVertexUserData.x;
+float Speed = CoronaVertexUserData.y;
 
 //----------------------------------------------
 vec2 rotate(vec2 uv, vec2 pivot, float angle)
@@ -54,9 +54,9 @@ vec2 rotate(vec2 uv, vec2 pivot, float angle)
 //----------------------------------------------
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  vec2 rotated_uv = rotate(UV, vec2(0.5), CoronaTotalTime * speed);
-  vec4 offset = texture2D(CoronaSampler1, vec2(rotated_uv.x , rotated_uv.y )) * strength; //Get offset 
-  P_COLOR vec4 COLOR = texture2D(CoronaSampler0, vec2(UV.x,UV.y) + offset.xy - vec2(0.5,0.5)*strength); //We need to remove the displacement 
+  vec2 rotated_uv = rotate(UV, vec2(0.5), CoronaTotalTime * Speed);
+  vec4 offset = texture2D(CoronaSampler1, vec2(rotated_uv.x , rotated_uv.y )) * Strength; //Get offset 
+  P_COLOR vec4 COLOR = texture2D(CoronaSampler0, vec2(UV.x,UV.y) + offset.xy - vec2(0.5,0.5)*Strength); //We need to remove the displacement 
   //----------------------------------------------
   return CoronaColorScale(COLOR);
 }

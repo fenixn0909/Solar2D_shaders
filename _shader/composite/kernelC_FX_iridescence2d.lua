@@ -15,29 +15,64 @@ kernel.name = "iridescence2d"
 
 
 kernel.isTimeDependent = true
+kernel.textureWrap = 'repeat'
 
-kernel.vertexData =
+
+kernel.uniformData =
 {
-  {
-    name = "resolutionX",
-    default = 1,
-    min = 1,
-    max = 99,
-    index = 0, 
-  },
+    {
+        index = 0, 
+        type = "mat4",  -- vec4 x 4
+        name = "uniSetting",
+        paramName = {
+            'Speed','Noise_Scale','Distor_X','Distor_Y',
+            'Intensity','','','',
+            '', '', '','',
+            '', '', '','',
+        },
+        default = {
+            5, .1, 1, 1.5,
+            .5, 0, 0, 0,
+             0, 0, 0, 0,
+             0, 0, 0, 0,
+        },
+        min = {
+             -10, 0.001, 0, 0,
+             0, .0, .001, 0.01,
+            .0, .0, .001, 0.01,
+            .0, .0, .001, 0.01,
+        },
+        max = {
+            10, 2, 10, 10,
+            1, 1.0, 1.0, 1,
+            1.0, 1.0, 1.0, 1,
+            1.0, 1.0, 1.0, 1,
+        },
+    },
 }
+
+
+
+
 
 
 kernel.fragment =
 [[
 
-//uniform sampler2D noise_texture;
-uniform float noise_scale = 1.0; //: hint_range(0.1, 10.0)
-uniform float distortion_scale_x = 0.03; //: hint_range(0.0, 10.0)
-uniform float distortion_scale_y = 0.03; //: hint_range(0.0, 10.0)
-uniform float rainbow_intensity = 0.5; //: hint_range(0.0, 1.0) 
+uniform mat4 u_UserData0; 
+uniform mat4 u_UserData1; 
+//----------------------------------------------
 
-float speed = 127;
+
+P_COLOR float Speed       = u_UserData0[0][0];
+P_COLOR float Noise_Scale = u_UserData0[0][1];
+P_COLOR float Distor_X    = u_UserData0[0][2];
+P_COLOR float Distor_Y    = u_UserData0[0][3];
+
+P_COLOR float Intensity   = u_UserData0[1][0];
+
+
+
 
 //----------------------------------------------
 
@@ -47,8 +82,7 @@ float speed = 127;
 // -----------------------------------------------
 
 P_COLOR vec4 COLOR;
-P_DEFAULT float TIME = CoronaTotalTime * speed;
-
+P_DEFAULT float TIME = CoronaTotalTime * Speed * 10;
 
 P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
@@ -57,11 +91,11 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
   
     vec4 base_texture = texture2D( CoronaSampler0, UV );
 
-    vec2 noise_uv = UV * noise_scale;
+    vec2 noise_uv = UV * Noise_Scale;
     float noise_x = texture2D( CoronaSampler1, noise_uv).r;
     float noise_y = texture2D( CoronaSampler1, noise_uv).g;
 
-    vec2 distorted_uv = UV + vec2(noise_x * distortion_scale_x, noise_y * distortion_scale_y);
+    vec2 distorted_uv = UV + vec2(noise_x * Distor_X, noise_y * Distor_Y);
 
     float rainbow_r = sin(distorted_uv.x * 15.0 + TIME * 0.1);
     float rainbow_g = sin(distorted_uv.y * 15.0 + TIME * 0.1 + 2.0);
@@ -70,9 +104,9 @@ P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
     vec3 rainbow_color = vec3(rainbow_r, rainbow_g, rainbow_b);
     rainbow_color = (rainbow_color + 1.0) * 0.5; // Normalize to [0.0, 1.0]
 
-    vec3 final_color = mix(base_texture.rgb, rainbow_color, rainbow_intensity);
+    vec3 final_color = mix(base_texture.rgb, rainbow_color, Intensity);
 
-    COLOR = vec4(final_color, COLOR.a);
+    COLOR = vec4(final_color, base_texture.a);
 
   //----------------------------------------------
   COLOR.rgb *= base_texture.a;

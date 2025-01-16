@@ -18,7 +18,7 @@ kernel.textureWrap = 'repeat'
 kernel.vertexData =
 {
   { name = "Speed",   default = 3, min = -10, max = 10, index = 0, },
-  { name = "Reduce",  default = .14, min = -1, max = 1.25, index = 1, },
+  { name = "Reduce",  default = .14, min = -.75, max = 1.25, index = 1, },
   { name = "Scale",  default = .25, min = 0, max = 5, index = 2, },
   { name = "Fade",  default = 8, min = 0, max = 75, index = 3, },
 } 

@@ -21,61 +21,49 @@ kernel.category = "composite"
 kernel.group = "palettePx"
 kernel.name = "filter"
 
---Test
 kernel.isTimeDependent = true
 
-kernel.vertexData   = {
-  {
-    name = "texDiffRatioX",
-    default = 1,
-    min = 0,
-    max = 32,  
-    index = 0,    
-  },
-  {
-    name = "texDiffRatioY",
-    default = 1,
-    min = 0,
-    max = 32,  
-    index = 1,    
-  },
-  
-}
+kernel.vertexData =
+{
+    { name = "Speed",  default = .5, min = 0, max = 5, index = 0, },
+    { name = "Amount",  default = 300, min = 0, max = 500, index = 1, },
+    { name = "Flip_Color",  default = 1.5, min = -1, max = 2, index = 2, },
+} 
 
 
 kernel.fragment =
 [[
-vec2 texDiffRatio = vec2( CoronaVertexUserData.x, CoronaVertexUserData.y );
+
+float Speed = CoronaVertexUserData.x;
+int Amount = int(CoronaVertexUserData.y * 1);
+float Flip_Color = CoronaVertexUserData.z;
 
 //----------------------------------------------
 
-uniform bool isFlip = false;
-//uniform sampler2D gradient; : hint_black // It can be whatever palette you want
-uniform int amount = 2000;
+float TIME = CoronaTotalTime;
+P_COLOR vec4 COLOR;
 
-
-//----------------------------------------------
-P_COLOR vec4 FragmentKernel( P_UV vec2 texCoord )
+P_COLOR vec4 FragmentKernel( P_UV vec2 UV )
 {
-  P_UV vec2 UV = texCoord;
-  P_COLOR vec4 COLOR;
-  //----------------------------------------------
-  //vec2 grid_uv = round(UV * float(amount)) / float(amount);
-  vec2 grid_uv = floor(UV * float(amount) + 0.5) / float(amount);
+    
+    float flip_color = mod(TIME*Speed, 1) * Flip_Color;
+    float amount = TIME*Speed * float(Amount);
+    //----------------------------------------------
+    vec2 grid_uv = floor(UV * float(Amount) + 0.5) / float(Amount);
 
-  vec4 col = texture2D(CoronaSampler0,grid_uv);
-  float alpha = col.a;
-  float lum = dot(col.rgb,vec3(0.2126,0.7152,0.0722)); // luminance
-  
-  col = texture2D(CoronaSampler1,vec2(abs(float(isFlip) - lum),0));
-  
+    vec4 col = texture2D(CoronaSampler0,grid_uv);
+    float alpha = col.a;
+    float lum = dot(col.rgb,vec3(0.2126,0.7152,0.0722)); // luminance
 
-  COLOR = col;
-  COLOR.a = alpha;
-  COLOR.rgb *= COLOR.a;
-  //----------------------------------------------
-  
-  return CoronaColorScale(COLOR);
+    //col = texture2D(CoronaSampler1,vec2(abs(Flip_Color - lum),0));
+    col = texture2D(CoronaSampler1,vec2(abs(flip_color - lum),0));
+
+    COLOR = col;
+    COLOR.a = alpha;
+    COLOR.rgb *= COLOR.a;
+    //----------------------------------------------
+
+    return CoronaColorScale(COLOR);
 }
 ]]
 
